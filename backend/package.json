@@ -1,0 +1,16 @@
+{
+  "name": "lms-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1",
+    "nodemon": "^3.1.14"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "nodemon server.js",
+    "lint": "eslint"
+  }
+}
