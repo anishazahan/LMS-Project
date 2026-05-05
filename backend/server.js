@@ -1,11 +1,15 @@
-console.log("Hello World! This is a test file.");
 
-const express = require('express');
+import express from 'express';
+import { connectDB } from './db/connection.js';
 const app = express();
 const port = 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+
+
+connectDB();
 
 // Sample route
 app.get('/', (req, res) => {
