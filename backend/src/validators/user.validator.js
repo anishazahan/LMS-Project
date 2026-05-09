@@ -1,8 +1,24 @@
 import { z } from 'zod';
 
+const optionalUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .url('Must be a valid URL')
+  .or(z.literal(''))
+  .optional();
+
 export const updateProfileSchema = z.object({
   name: z.string().min(2).max(80).optional(),
   bio: z.string().max(1000).optional(),
+  socialLinks: z
+    .object({
+      linkedin: optionalUrl,
+      github: optionalUrl,
+      website: optionalUrl,
+    })
+    .partial()
+    .optional(),
 });
 
 export const changePasswordSchema = z

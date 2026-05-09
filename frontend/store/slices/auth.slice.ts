@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
-import { authApi } from "@/lib/api/endpoints";
-import { setAuthToken } from "@/lib/api/axios";
+import { createSlice, isAnyOf, type PayloadAction } from "@reduxjs/toolkit";
+import { authApi } from "@/lib/api/auth.api";
+import { userApi } from "@/lib/api/user.api";
 import { TOKEN_STORAGE_KEY, USER_STORAGE_KEY } from "@/lib/constants";
 import type { User } from "@/types";
 
@@ -20,50 +20,17 @@ const initialState: AuthState = {
   error: null,
 };
 
-export const loginThunk = createAsyncThunk(
-  "auth/login",
-  async (body: { email: string; password: string }, { rejectWithValue }) => {
-    try {
-      return await authApi.login(body);
-    } catch (e) {
-      const err = e as { message?: string };
-      return rejectWithValue(err.message || "Login failed");
-    }
-  }
-);
+const persistToken = (token: string | null) => {
+  if (typeof window === "undefined") return;
+  if (token) localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  else localStorage.removeItem(TOKEN_STORAGE_KEY);
+};
 
-export const registerThunk = createAsyncThunk(
-  "auth/register",
-  async (
-    body: {
-      name: string;
-      email: string;
-      password: string;
-      confirmPassword: string;
-      role?: "student" | "instructor";
-    },
-    { rejectWithValue }
-  ) => {
-    try {
-      return await authApi.register(body);
-    } catch (e) {
-      const err = e as { message?: string };
-      return rejectWithValue(err.message || "Registration failed");
-    }
-  }
-);
-
-export const fetchMeThunk = createAsyncThunk(
-  "auth/fetchMe",
-  async (_: void, { rejectWithValue }) => {
-    try {
-      return await authApi.me();
-    } catch (e) {
-      const err = e as { message?: string };
-      return rejectWithValue(err.message || "Failed to fetch user");
-    }
-  }
-);
+const persistUser = (user: User | null) => {
+  if (typeof window === "undefined") return;
+  if (user) localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+  else localStorage.removeItem(USER_STORAGE_KEY);
+};
 
 const authSlice = createSlice({
   name: "auth",
@@ -78,10 +45,9 @@ const authSlice = createSlice({
           state.token = token;
           state.user = JSON.parse(userRaw) as User;
           state.status = "authenticated";
-          setAuthToken(token);
         } catch {
-          localStorage.removeItem(TOKEN_STORAGE_KEY);
-          localStorage.removeItem(USER_STORAGE_KEY);
+          persistToken(null);
+          persistUser(null);
           state.status = "unauthenticated";
         }
       } else {
@@ -94,66 +60,77 @@ const authSlice = createSlice({
       state.token = null;
       state.status = "unauthenticated";
       state.error = null;
-      setAuthToken(null);
-      if (typeof window !== "undefined") {
-        localStorage.removeItem(USER_STORAGE_KEY);
-      }
+      persistToken(null);
+      persistUser(null);
     },
     setUser(state, action: PayloadAction<User>) {
       state.user = action.payload;
-      if (typeof window !== "undefined") {
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(action.payload));
-      }
+      persistUser(action.payload);
     },
   },
   extraReducers: (builder) => {
-    const handleAuthSuccess = (
-      state: AuthState,
-      action: PayloadAction<{ token: string; user: User }>
-    ) => {
-      state.token = action.payload.token;
-      state.user = action.payload.user;
-      state.status = "authenticated";
-      state.error = null;
-      setAuthToken(action.payload.token);
-      if (typeof window !== "undefined") {
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(action.payload.user));
-      }
-    };
-
     builder
-      .addCase(loginThunk.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(loginThunk.fulfilled, handleAuthSuccess)
-      .addCase(loginThunk.rejected, (state, action) => {
-        state.status = "unauthenticated";
-        state.error = (action.payload as string) || "Login failed";
-      })
-      .addCase(registerThunk.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(registerThunk.fulfilled, handleAuthSuccess)
-      .addCase(registerThunk.rejected, (state, action) => {
-        state.status = "unauthenticated";
-        state.error = (action.payload as string) || "Registration failed";
-      })
-      .addCase(fetchMeThunk.fulfilled, (state, action) => {
+      .addMatcher(
+        isAnyOf(
+          authApi.endpoints.login.matchPending,
+          authApi.endpoints.register.matchPending,
+        ),
+        (state) => {
+          state.status = "loading";
+          state.error = null;
+        },
+      )
+      .addMatcher(
+        isAnyOf(
+          authApi.endpoints.login.matchFulfilled,
+          authApi.endpoints.register.matchFulfilled,
+        ),
+        (state, action) => {
+          state.token = action.payload.token;
+          state.user = action.payload.user;
+          state.status = "authenticated";
+          state.error = null;
+          persistToken(action.payload.token);
+          persistUser(action.payload.user);
+        },
+      )
+      .addMatcher(
+        isAnyOf(
+          authApi.endpoints.login.matchRejected,
+          authApi.endpoints.register.matchRejected,
+        ),
+        (state, action) => {
+          state.status = "unauthenticated";
+          const errPayload = action.payload as { data?: { message?: string } } | undefined;
+          state.error =
+            errPayload?.data?.message || action.error?.message || "Authentication failed";
+        },
+      )
+      .addMatcher(
+        isAnyOf(
+          authApi.endpoints.me.matchFulfilled,
+          userApi.endpoints.getMe.matchFulfilled,
+        ),
+        (state, action) => {
+          state.user = action.payload.user;
+          state.status = "authenticated";
+          persistUser(action.payload.user);
+        },
+      )
+      .addMatcher(userApi.endpoints.updateProfile.matchFulfilled, (state, action) => {
         state.user = action.payload.user;
-        state.status = "authenticated";
-        if (typeof window !== "undefined") {
-          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(action.payload.user));
+        persistUser(action.payload.user);
+      })
+      .addMatcher(userApi.endpoints.uploadProfileImage.matchFulfilled, (state, action) => {
+        if (state.user) {
+          state.user = { ...state.user, profileImage: action.payload.profileImage };
+          persistUser(state.user);
         }
       })
-      .addCase(fetchMeThunk.rejected, (state) => {
-        state.user = null;
-        state.token = null;
-        state.status = "unauthenticated";
-        setAuthToken(null);
-        if (typeof window !== "undefined") {
-          localStorage.removeItem(USER_STORAGE_KEY);
+      .addMatcher(userApi.endpoints.deleteProfileImage.matchFulfilled, (state) => {
+        if (state.user) {
+          state.user = { ...state.user, profileImage: { url: null, publicId: null } };
+          persistUser(state.user);
         }
       });
   },

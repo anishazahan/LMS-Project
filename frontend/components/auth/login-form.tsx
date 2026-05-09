@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,42 +17,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAppDispatch } from "@/store/hooks";
-import { loginThunk } from "@/store/slices/auth.slice";
+import { useLoginMutation } from "@/lib/api/auth.api";
 import { dashboardRouteFor, ROUTES } from "@/lib/constants";
-
-const schema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(1, "Password is required"),
-});
-
-type FormValues = z.infer<typeof schema>;
+import { loginSchema, type LoginValues } from "@/lib/validation/auth.schema";
 
 export function LoginForm() {
-  const dispatch = useAppDispatch();
   const router = useRouter();
   const params = useSearchParams();
-  const [submitting, setSubmitting] = useState(false);
+  const [login, { isLoading }] = useLoginMutation();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  } = useForm<LoginValues>({ resolver: yupResolver(loginSchema) });
 
   const onSubmit = handleSubmit(async (values) => {
-    setSubmitting(true);
     try {
-      const result = await dispatch(loginThunk(values));
-      if (loginThunk.fulfilled.match(result)) {
-        toast.success("Welcome back!");
-        const next = params.get("next");
-        router.push(next || dashboardRouteFor(result.payload.user.role));
-      } else {
-        toast.error("Login failed", { description: (result.payload as string) || "Check your credentials" });
-      }
-    } finally {
-      setSubmitting(false);
+      const data = await login(values).unwrap();
+      toast.success("Welcome back!");
+      const next = params.get("next");
+      router.push(next || dashboardRouteFor(data.user.role));
+    } catch {
+      // error toast is handled centrally by error-toast middleware
     }
   });
 
@@ -93,8 +78,8 @@ export function LoginForm() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
-          <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             Log in
           </Button>
           <p className="text-sm text-muted-foreground">

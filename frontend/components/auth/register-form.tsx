@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,51 +17,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAppDispatch } from "@/store/hooks";
-import { registerThunk } from "@/store/slices/auth.slice";
+import { useRegisterMutation } from "@/lib/api/auth.api";
 import { dashboardRouteFor, ROUTES } from "@/lib/constants";
-
-const schema = z
-  .object({
-    name: z.string().min(2, "Name is too short").max(80),
-    email: z.string().email(),
-    password: z.string().min(6, "At least 6 characters"),
-    confirmPassword: z.string().min(6),
-    role: z.enum(["student", "instructor"]).default("student"),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    path: ["confirmPassword"],
-    message: "Passwords do not match",
-  });
-
-type FormValues = z.infer<typeof schema>;
+import { registerSchema, type RegisterValues } from "@/lib/validation/auth.schema";
 
 export function RegisterForm() {
-  const dispatch = useAppDispatch();
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
+  const [registerUser, { isLoading }] = useRegisterMutation();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  } = useForm<RegisterValues>({
+    resolver: yupResolver(registerSchema),
     defaultValues: { role: "student" },
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    setSubmitting(true);
     try {
-      const result = await dispatch(registerThunk(values));
-      if (registerThunk.fulfilled.match(result)) {
-        toast.success("Account created");
-        router.push(dashboardRouteFor(result.payload.user.role));
-      } else {
-        toast.error("Registration failed", { description: (result.payload as string) || "Try again" });
-      }
-    } finally {
-      setSubmitting(false);
+      const data = await registerUser(values).unwrap();
+      toast.success("Account created");
+      router.push(dashboardRouteFor(data.user.role));
+    } catch {
+      // central error toast handles it
     }
   });
 
@@ -121,8 +98,8 @@ export function RegisterForm() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
-          <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             Create account
           </Button>
           <p className="text-sm text-muted-foreground">

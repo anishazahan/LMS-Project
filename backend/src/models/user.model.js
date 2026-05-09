@@ -26,6 +26,11 @@ const userSchema = new mongoose.Schema(
       publicId: { type: String, default: null },
     },
     bio: { type: String, default: '' },
+    socialLinks: {
+      linkedin: { type: String, default: '', trim: true },
+      github: { type: String, default: '', trim: true },
+      website: { type: String, default: '', trim: true },
+    },
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String, select: false },
     twoFactorEnabled: { type: Boolean, default: false },
