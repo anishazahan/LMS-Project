@@ -4,7 +4,6 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import mongoSanitize from 'express-mongo-sanitize';
 import hpp from 'hpp';
 
 import { env } from './config/env.js';
@@ -52,8 +51,29 @@ app.post(
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// Sanitization
-app.use(mongoSanitize());
+// Sanitization — strip Mongo operator keys ($, .) from body & params.
+// express-mongo-sanitize is incompatible with Express 5 (req.query is read-only),
+// so we sanitize in place on the writable targets only.
+const sanitizeMongo = (value) => {
+  if (Array.isArray(value)) {
+    value.forEach(sanitizeMongo);
+    return;
+  }
+  if (value && typeof value === 'object') {
+    for (const key of Object.keys(value)) {
+      if (key.startsWith('$') || key.includes('.')) {
+        delete value[key];
+      } else {
+        sanitizeMongo(value[key]);
+      }
+    }
+  }
+};
+app.use((req, _res, next) => {
+  if (req.body) sanitizeMongo(req.body);
+  if (req.params) sanitizeMongo(req.params);
+  next();
+});
 app.use(hpp());
 
 // Rate limiting (global)
