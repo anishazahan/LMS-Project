@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { LogOut, User as UserIcon, LayoutDashboard } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -19,9 +20,27 @@ import { dashboardRouteFor, ROUTES } from "@/lib/constants";
 import { getInitials } from "@/lib/utils";
 
 export function UserMenu() {
+  const [mounted, setMounted] = useState(false);
   const user = useAppSelector((s) => s.auth.user);
   const dispatch = useAppDispatch();
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" className="opacity-0">
+          Log in
+        </Button>
+        <Button size="sm" className="opacity-0">
+          Sign up
+        </Button>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -63,12 +82,12 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href={dashboardRouteFor(user.role)}>
-            <LayoutDashboard /> Dashboard
+            <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href={`${dashboardRouteFor(user.role)}/profile`}>
-            <UserIcon /> Profile
+            <UserIcon className="mr-2 h-4 w-4" /> Profile
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -78,7 +97,7 @@ export function UserMenu() {
             router.push(ROUTES.HOME);
           }}
         >
-          <LogOut /> Log out
+          <LogOut className="mr-2 h-4 w-4" /> Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
