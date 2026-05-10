@@ -6,6 +6,7 @@ import { ROLES } from '../constants/roles.js';
 import { parsePagination } from '../utils/pagination.js';
 import { uploadFromBuffer, destroy } from '../services/cloudinary.service.js';
 import Course from '../models/course.model.js';
+import Module from '../models/module.model.js';
 
 const isOwnerOrAdmin = (course, user) =>
   course.instructor.toString() === user._id.toString() || user.role === ROLES.ADMIN;
@@ -30,10 +31,29 @@ export const listCourses = asyncHandler(async (req, res) => {
   return sendSuccess(res, paginate(items, { page, limit, total }));
 });
 
+export const listInstructorCourses = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query);
+  const filter = { instructor: req.userId };
+
+  if (req.query.status === 'published') filter.isPublished = true;
+  else if (req.query.status === 'unpublished') filter.isPublished = false;
+
+  if (req.query.search) {
+    filter.title = { $regex: req.query.search, $options: 'i' };
+  }
+
+  const [items, total] = await Promise.all([
+    Course.find(filter).sort('-createdAt').skip(skip).limit(limit),
+    Course.countDocuments(filter),
+  ]);
+
+  return sendSuccess(res, paginate(items, { page, limit, total }));
+});
+
 export const getCourse = asyncHandler(async (req, res) => {
   const course = await Course.findById(req.params.id)
     .populate('instructor', 'name email profileImage bio')
-    .populate('modules');
+    .populate({ path: 'modules', options: { sort: { order: 1 } } });
   if (!course) throw ApiError.notFound('Course not found');
   return sendSuccess(res, { data: { course } });
 });
@@ -68,6 +88,7 @@ export const deleteCourse = asyncHandler(async (req, res) => {
   if (course.thumbnail?.publicId) {
     await destroy(course.thumbnail.publicId, 'image').catch(() => {});
   }
+  await Module.deleteMany({ course: course._id });
   await course.deleteOne();
   return sendSuccess(res, { message: 'Course deleted' });
 });

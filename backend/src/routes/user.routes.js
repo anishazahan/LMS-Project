@@ -9,10 +9,21 @@ import {
   changePassword,
   uploadProfileImage,
   deleteProfileImage,
+  listInstructors,
+  getInstructorWithCourses,
 } from '../controllers/user.controller.js';
-import { updateProfileSchema, changePasswordSchema } from '../validators/user.validator.js';
+import {
+  updateProfileSchema,
+  changePasswordSchema,
+  instructorListQuery,
+} from '../validators/user.validator.js';
+import { idParam } from '../validators/common.validator.js';
 
 const router = Router();
+
+// Public — instructors directory (used by landing page)
+router.get('/instructors', validate({ query: instructorListQuery }), listInstructors);
+router.get('/instructors/:id', validate({ params: idParam }), getInstructorWithCourses);
 
 router.use(protect);
 

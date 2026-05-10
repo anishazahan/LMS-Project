@@ -6,6 +6,7 @@ import { uploadImage, handleMulter } from '../middlewares/upload.middleware.js';
 import { ROLES } from '../constants/roles.js';
 import {
   listCourses,
+  listInstructorCourses,
   getCourse,
   createCourse,
   updateCourse,
@@ -17,16 +18,27 @@ import {
   createCourseSchema,
   updateCourseSchema,
   listCourseQuery,
+  instructorListQuery,
   publishSchema,
 } from '../validators/course.validator.js';
 import { idParam } from '../validators/common.validator.js';
 
 const router = Router();
 
+// Public
 router.get('/', validate({ query: listCourseQuery }), listCourses);
 router.get('/:id', validate({ params: idParam }), getCourse);
 
+// Authenticated routes below
 router.use(protect);
+
+// Instructor's own courses (all statuses)
+router.get(
+  '/instructor/me',
+  authorize(ROLES.INSTRUCTOR, ROLES.ADMIN),
+  validate({ query: instructorListQuery }),
+  listInstructorCourses
+);
 
 router.post(
   '/',

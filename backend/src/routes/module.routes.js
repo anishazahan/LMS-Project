@@ -2,11 +2,6 @@ import { Router } from 'express';
 import { protect } from '../middlewares/auth.middleware.js';
 import { authorize } from '../middlewares/rbac.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
-import {
-  uploadVideo as uploadVideoMw,
-  uploadDocument,
-  handleMulter,
-} from '../middlewares/upload.middleware.js';
 import { ROLES } from '../constants/roles.js';
 import {
   listByCourse,
@@ -14,8 +9,6 @@ import {
   updateModule,
   deleteModule,
   togglePublish,
-  uploadVideo,
-  uploadResource,
 } from '../controllers/module.controller.js';
 import {
   createModuleSchema,
@@ -58,20 +51,6 @@ router.patch(
   authorize(ROLES.INSTRUCTOR, ROLES.ADMIN),
   validate({ params: idParam, body: publishModuleSchema }),
   togglePublish
-);
-router.post(
-  '/:id/video',
-  authorize(ROLES.INSTRUCTOR, ROLES.ADMIN),
-  validate({ params: idParam }),
-  handleMulter(uploadVideoMw.single('video')),
-  uploadVideo
-);
-router.post(
-  '/:id/resources',
-  authorize(ROLES.INSTRUCTOR, ROLES.ADMIN),
-  validate({ params: idParam }),
-  handleMulter(uploadDocument.single('file')),
-  uploadResource
 );
 
 export default router;

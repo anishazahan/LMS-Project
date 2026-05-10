@@ -3,7 +3,16 @@ import mongoose from 'mongoose';
 const courseSchema = new mongoose.Schema(
   {
     title: { type: String, required: [true, 'Course title is required'], trim: true, index: 'text' },
-    description: { type: String, required: [true, 'Course description is required'] },
+    shortDescription: {
+      type: String,
+      required: [true, 'Short description is required'],
+      trim: true,
+      maxlength: 280,
+    },
+    fullDescription: {
+      type: String,
+      required: [true, 'Full description is required'],
+    },
     instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     thumbnail: {
       url: { type: String, default: null },
@@ -31,6 +40,6 @@ const courseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-courseSchema.index({ title: 'text', description: 'text' });
+courseSchema.index({ title: 'text', shortDescription: 'text', fullDescription: 'text' });
 
 export default mongoose.model('Course', courseSchema);

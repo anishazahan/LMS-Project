@@ -16,6 +16,9 @@ export function SiteHeader() {
           <Link href="/courses" className="text-foreground/70 hover:text-foreground transition">
             Courses
           </Link>
+          <Link href="/instructors" className="text-foreground/70 hover:text-foreground transition">
+            Instructors
+          </Link>
           <Link href="/about" className="text-foreground/70 hover:text-foreground transition">
             About
           </Link>

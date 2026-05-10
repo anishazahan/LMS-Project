@@ -14,13 +14,34 @@ export interface User {
   updatedAt?: string;
 }
 
+export interface PublicInstructor {
+  _id: string;
+  name: string;
+  role: "instructor";
+  profileImage?: { url: string | null; publicId: string | null };
+  bio?: string;
+  socialLinks?: { linkedin?: string; github?: string; website?: string };
+  createdAt?: string;
+  publishedCourseCount?: number;
+}
+
+export type CourseLevel = "beginner" | "intermediate" | "advanced";
+export type CourseCategory =
+  | "programming"
+  | "design"
+  | "business"
+  | "personal-development"
+  | "marketing"
+  | "other";
+
 export interface Course {
   _id: string;
   title: string;
-  description: string;
+  shortDescription: string;
+  fullDescription: string;
   price: number;
-  category: string;
-  level: "beginner" | "intermediate" | "advanced";
+  category: CourseCategory;
+  level: CourseLevel;
   thumbnail?: { url: string | null; publicId: string | null };
   isPublished: boolean;
   instructor: Pick<User, "_id" | "name" | "email"> | string;
@@ -32,17 +53,29 @@ export interface Course {
   updatedAt?: string;
 }
 
+export interface Lesson {
+  _id: string;
+  title: string;
+  description?: string;
+  videoUrl: string;
+  duration: number;
+  isFreePreview: boolean;
+  isPublished: boolean;
+  order: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Module {
   _id: string;
   title: string;
-  description: string;
+  description?: string;
   course: string;
-  video: { url: string; publicId?: string | null; type: "youtube" | "cloudinary" | "external" };
-  duration: number;
-  content?: string;
-  resources?: Array<{ title: string; url: string; publicId?: string | null; type: string }>;
-  isPublished: boolean;
   order: number;
+  isPublished: boolean;
+  lessons: Lesson[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Enrollment {
@@ -50,7 +83,7 @@ export interface Enrollment {
   student: string;
   course: Course | string;
   progress: number;
-  completedModules: string[] | Module[];
+  completedModules: string[];
   paymentStatus: "pending" | "completed" | "failed";
   enrollmentDate: string;
   completionDate?: string;

@@ -1,9 +1,12 @@
 import mongoose from 'mongoose';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
-import { sendSuccess } from '../utils/ApiResponse.js';
+import { sendSuccess, paginate } from '../utils/ApiResponse.js';
+import { parsePagination } from '../utils/pagination.js';
 import { uploadFromBuffer, destroy } from '../services/cloudinary.service.js';
+import { ROLES } from '../constants/roles.js';
 import User from '../models/user.model.js';
+import Course from '../models/course.model.js';
 
 const PUBLIC_FIELDS = 'name role profileImage bio socialLinks createdAt';
 
@@ -20,6 +23,48 @@ export const getPublicProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(id).select(PUBLIC_FIELDS);
   if (!user) throw ApiError.notFound('User not found');
   return sendSuccess(res, { data: { user } });
+});
+
+export const listInstructors = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query);
+  const filter = { role: ROLES.INSTRUCTOR };
+  if (req.query.search) {
+    filter.name = { $regex: req.query.search, $options: 'i' };
+  }
+
+  const [items, total] = await Promise.all([
+    User.find(filter).select(PUBLIC_FIELDS).sort('-createdAt').skip(skip).limit(limit),
+    User.countDocuments(filter),
+  ]);
+
+  // Decorate with public course counts so cards can show stats.
+  const ids = items.map((i) => i._id);
+  const counts = await Course.aggregate([
+    { $match: { instructor: { $in: ids }, isPublished: true } },
+    { $group: { _id: '$instructor', count: { $sum: 1 } } },
+  ]);
+  const countMap = Object.fromEntries(counts.map((c) => [c._id.toString(), c.count]));
+
+  const data = items.map((u) => ({
+    ...u.toObject(),
+    publishedCourseCount: countMap[u._id.toString()] || 0,
+  }));
+
+  return sendSuccess(res, paginate(data, { page, limit, total }));
+});
+
+export const getInstructorWithCourses = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.isValidObjectId(id)) throw ApiError.badRequest('Invalid user id');
+
+  const instructor = await User.findOne({ _id: id, role: ROLES.INSTRUCTOR }).select(PUBLIC_FIELDS);
+  if (!instructor) throw ApiError.notFound('Instructor not found');
+
+  const courses = await Course.find({ instructor: id, isPublished: true })
+    .select('title shortDescription thumbnail price category level rating reviewCount createdAt')
+    .sort('-createdAt');
+
+  return sendSuccess(res, { data: { instructor, courses } });
 });
 
 export const updateProfile = asyncHandler(async (req, res) => {
