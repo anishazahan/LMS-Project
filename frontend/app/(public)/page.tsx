@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, BrainCircuit, Sparkles, Zap, Cpu, Network, Layers } from "lucide-react";
+import { ArrowRight, BrainCircuit, Sparkles, Zap, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FeaturedSections } from "@/components/public/featured-sections";
 
 export default function HomePage() {
   return (
@@ -40,7 +41,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="relative container pb-32">
+      <section className="relative container pb-20">
         <div className="text-center mb-16 space-y-4">
           <h2 className="text-3xl font-bold tracking-tight">Intelligence at Every Step</h2>
           <p className="text-muted-foreground max-w-xl mx-auto">Our platform integrates cutting-edge AI to provide an unparalleled learning experience.</p>
@@ -77,6 +78,8 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      <FeaturedSections />
     </div>
   );
 }

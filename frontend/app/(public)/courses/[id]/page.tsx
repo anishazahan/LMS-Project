@@ -1,21 +1,22 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, PlayCircle, Clock, ChevronDown, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, BookOpen, PlayCircle, Clock, ChevronDown, ChevronRight, Lock, X } from "lucide-react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGetPublicCourseByIdQuery } from "@/lib/api/course.api";
-import { formatCurrency, getInitials } from "@/lib/utils";
-import type { Module, User } from "@/types";
+import { formatCurrency, getInitials, youtubeEmbedUrl } from "@/lib/utils";
+import type { Lesson, Module, User } from "@/types";
 
 export default function PublicCourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { data, isLoading } = useGetPublicCourseByIdQuery(id);
+  const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
 
   if (isLoading) {
     return (
@@ -55,6 +56,25 @@ export default function PublicCourseDetailPage({ params }: { params: Promise<{ i
     0,
   );
 
+  const handleLessonClick = (lesson: Lesson) => {
+    if (!lesson.isFreePreview) {
+      toast.warning("Lesson locked", {
+        description: "Enroll to unlock this lesson.",
+      });
+      return;
+    }
+    const embed = youtubeEmbedUrl(lesson.videoUrl);
+    if (!embed) {
+      toast.error("Invalid video URL", {
+        description: "This lesson's video link couldn't be loaded.",
+      });
+      return;
+    }
+    setActiveLesson(lesson);
+  };
+
+  const activeEmbed = activeLesson ? youtubeEmbedUrl(activeLesson.videoUrl) : null;
+
   return (
     <div className="container space-y-8 py-10">
       <Button variant="ghost" size="sm" asChild className="rounded-xs">
@@ -66,8 +86,27 @@ export default function PublicCourseDetailPage({ params }: { params: Promise<{ i
 
       <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
         <div className="space-y-6">
-          <div className="aspect-video w-full overflow-hidden rounded-xs border bg-muted">
-            {course.thumbnail?.url ? (
+          <div className="relative aspect-video w-full overflow-hidden rounded-xs border bg-black">
+            {activeLesson && activeEmbed ? (
+              <>
+                <iframe
+                  key={activeLesson._id}
+                  src={`${activeEmbed}&autoplay=1`}
+                  title={activeLesson.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="h-full w-full"
+                />
+                <button
+                  type="button"
+                  onClick={() => setActiveLesson(null)}
+                  className="absolute right-2 top-2 rounded-xs bg-background/90 p-1.5 text-foreground shadow hover:bg-background"
+                  aria-label="Close player"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </>
+            ) : course.thumbnail?.url ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 src={course.thumbnail.url}
@@ -80,6 +119,15 @@ export default function PublicCourseDetailPage({ params }: { params: Promise<{ i
               </div>
             )}
           </div>
+
+          {activeLesson ? (
+            <div className="rounded-xs border bg-muted/30 p-3 text-sm">
+              <p className="font-medium">Now playing: {activeLesson.title}</p>
+              {activeLesson.description ? (
+                <p className="mt-1 text-xs text-muted-foreground">{activeLesson.description}</p>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="space-y-3">
             <div className="flex flex-wrap gap-2">
@@ -130,7 +178,14 @@ export default function PublicCourseDetailPage({ params }: { params: Promise<{ i
               {modules.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No modules published yet.</p>
               ) : (
-                modules.map((m) => <ModuleAccordion key={m._id} module={m} />)
+                modules.map((m) => (
+                  <ModuleAccordion
+                    key={m._id}
+                    module={m}
+                    activeLessonId={activeLesson?._id ?? null}
+                    onLessonClick={handleLessonClick}
+                  />
+                ))
               )}
             </CardContent>
           </Card>
@@ -190,7 +245,13 @@ function InstructorAside({ instructor }: { instructor: User }) {
   );
 }
 
-function ModuleAccordion({ module: mod }: { module: Module }) {
+interface ModuleAccordionProps {
+  module: Module;
+  activeLessonId: string | null;
+  onLessonClick: (lesson: Lesson) => void;
+}
+
+function ModuleAccordion({ module: mod, activeLessonId, onLessonClick }: ModuleAccordionProps) {
   const [open, setOpen] = useState(false);
   const lessons = (mod.lessons ?? []).slice().sort((a, b) => a.order - b.order);
 
@@ -221,27 +282,46 @@ function ModuleAccordion({ module: mod }: { module: Module }) {
           {lessons.length === 0 ? (
             <li className="text-xs text-muted-foreground">No lessons yet.</li>
           ) : (
-            lessons.map((lesson) => (
-              <li
-                key={lesson._id}
-                className="flex items-center justify-between gap-2 rounded-xs bg-muted/40 p-2 text-sm"
-              >
-                <span className="flex items-center gap-2 truncate">
-                  <PlayCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="truncate">{lesson.title}</span>
-                  {lesson.isFreePreview ? (
-                    <Badge variant="outline" className="rounded-xs">
-                      Free
-                    </Badge>
-                  ) : null}
-                </span>
-                {lesson.duration ? (
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {lesson.duration} min
-                  </span>
-                ) : null}
-              </li>
-            ))
+            lessons.map((lesson) => {
+              const isActive = lesson._id === activeLessonId;
+              const playable = lesson.isFreePreview;
+              return (
+                <li key={lesson._id}>
+                  <button
+                    type="button"
+                    onClick={() => onLessonClick(lesson)}
+                    className={`flex w-full items-center justify-between gap-2 rounded-xs p-2 text-left text-sm transition-colors ${
+                      isActive
+                        ? "bg-primary/10 text-foreground"
+                        : "bg-muted/40 hover:bg-muted"
+                    } ${playable ? "cursor-pointer" : "cursor-not-allowed opacity-80"}`}
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      {playable ? (
+                        <PlayCircle
+                          className={`h-4 w-4 shrink-0 ${
+                            isActive ? "text-primary" : "text-muted-foreground"
+                          }`}
+                        />
+                      ) : (
+                        <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      )}
+                      <span className="truncate">{lesson.title}</span>
+                      {lesson.isFreePreview ? (
+                        <Badge variant="outline" className="rounded-xs">
+                          Free
+                        </Badge>
+                      ) : null}
+                    </span>
+                    {lesson.duration ? (
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {lesson.duration} min
+                      </span>
+                    ) : null}
+                  </button>
+                </li>
+              );
+            })
           )}
         </ul>
       ) : null}

@@ -27,3 +27,24 @@ export function getInitials(name: string) {
     .join("")
     .toUpperCase();
 }
+
+// Extract a YouTube video ID from common URL shapes; returns null if it can't.
+export function extractYouTubeId(url: string): string | null {
+  if (!url) return null;
+  const patterns = [
+    /youtube\.com\/watch\?[^#]*v=([\w-]{6,})/,
+    /youtu\.be\/([\w-]{6,})/,
+    /youtube\.com\/embed\/([\w-]{6,})/,
+    /youtube\.com\/shorts\/([\w-]{6,})/,
+  ];
+  for (const re of patterns) {
+    const m = url.match(re);
+    if (m?.[1]) return m[1];
+  }
+  return null;
+}
+
+export function youtubeEmbedUrl(url: string): string | null {
+  const id = extractYouTubeId(url);
+  return id ? `https://www.youtube.com/embed/${id}?rel=0` : null;
+}
