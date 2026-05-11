@@ -29,8 +29,8 @@ export const emailTemplates = {
       </div>
       <p>You now have lifetime access to this course.</p>
       <p>
-        <a href="${env.FRONTEND_URL}/student/purchased" style="background:#007bff;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;margin-right:8px;">View Your Courses</a>
-        ${paymentId ? `<a href="${env.FRONTEND_URL}/payments/${paymentId}/receipt" style="background:#10b981;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;">Download Receipt</a>` : ''}
+        <a href="${env.FRONTEND_URL}/student" style="background:#007bff;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;margin-right:8px;">View Your Courses</a>
+        ${paymentId ? `<a href="${env.FRONTEND_URL}/dashboard/payments/${paymentId}" style="background:#10b981;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;">Download Receipt</a>` : ''}
       </p>
     `),
   }),

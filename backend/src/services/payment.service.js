@@ -79,3 +79,23 @@ export const activatePayment = async ({ payment, session }) => {
   logger.info(`Payment activated: ${payment._id} → enrollment ${enrollment._id}`);
   return { payment, enrollment, alreadyActive: false };
 };
+
+export const markExpired = async (stripeSessionId) => {
+  const payment = await Payment.findOneAndUpdate(
+    { stripeSessionId, status: { $in: ['pending'] } },
+    { status: 'expired' },
+    { new: true }
+  );
+  if (payment) logger.info(`Payment expired: ${payment._id}`);
+  return payment;
+};
+
+export const markFailed = async (stripeSessionId, reason) => {
+  const payment = await Payment.findOneAndUpdate(
+    { stripeSessionId, status: { $in: ['pending'] } },
+    { status: 'failed', failureReason: reason || 'Payment failed' },
+    { new: true }
+  );
+  if (payment) logger.warn(`Payment failed: ${payment._id} (${reason})`);
+  return payment;
+};

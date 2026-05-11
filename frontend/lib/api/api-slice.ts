@@ -40,6 +40,9 @@ export const apiSlice = createApi({
     "Lesson",
     "PublicCourse",
     "PublicInstructor",
+    "Payment",
+    "Enrollment",
+    "InstructorStats",
   ],
   endpoints: () => ({}),
 });

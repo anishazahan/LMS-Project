@@ -89,16 +89,52 @@ export interface Enrollment {
   completionDate?: string;
 }
 
+export type PaymentStatus = "pending" | "succeeded" | "failed" | "canceled" | "expired";
+
 export interface Payment {
   _id: string;
-  student: string;
+  student: string | Pick<User, "_id" | "name" | "email">;
   course: Course | string;
+  instructor?: string | Pick<User, "_id" | "name" | "email">;
   amount: number;
   currency: string;
-  status: "pending" | "succeeded" | "failed" | "canceled";
+  status: PaymentStatus;
+  stripeSessionId?: string;
   stripePaymentIntentId?: string;
-  receiptUrl?: string;
+  transactionId?: string;
+  paidAt?: string;
+  failureReason?: string;
   createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ReceiptData {
+  platform: { name: string };
+  user: { name: string; email: string };
+  course: { title: string };
+  instructor: { name: string };
+  transactionId: string;
+  amount: number;
+  currency: string;
+  paidAt: string;
+  status: PaymentStatus;
+}
+
+export interface InstructorStats {
+  totalStudents: number;
+  totalSales: number;
+  totalRevenue: number;
+  currency: string;
+  monthlyBreakdown: Array<{ year: number; month: number; revenue: number; sales: number }>;
+}
+
+export interface PurchasedEnrollment {
+  _id: string;
+  course: Course;
+  payment?: Pick<Payment, "amount" | "currency" | "paidAt" | "transactionId"> & { _id?: string };
+  progress: number;
+  paymentStatus: "pending" | "completed" | "failed";
+  enrollmentDate: string;
 }
 
 export interface ApiSuccess<T = unknown> {

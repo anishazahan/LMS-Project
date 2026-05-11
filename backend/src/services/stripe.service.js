@@ -21,7 +21,7 @@ export const createCheckoutSession = ({ course, user, successUrl, cancelUrl, met
       },
     ],
     success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: cancelUrl,
+    cancel_url: `${cancelUrl}?session_id={CHECKOUT_SESSION_ID}`,
     metadata: {
       courseId: course._id.toString(),
       userId: user._id.toString(),
@@ -32,17 +32,6 @@ export const createCheckoutSession = ({ course, user, successUrl, cancelUrl, met
 
 export const retrieveCheckoutSession = (id) =>
   getStripe().checkout.sessions.retrieve(id, { expand: ['payment_intent'] });
-
-// Kept temporarily so the legacy controller import keeps resolving; removed in PR 2.
-export const createPaymentIntent = ({ amount, currency = env.STRIPE_CURRENCY, metadata = {} }) =>
-  getStripe().paymentIntents.create({
-    amount: Math.round(amount * 100),
-    currency,
-    automatic_payment_methods: { enabled: true },
-    metadata,
-  });
-
-export const retrievePaymentIntent = (id) => getStripe().paymentIntents.retrieve(id);
 
 export const constructWebhookEvent = (rawBody, signature) =>
   getStripe().webhooks.constructEvent(rawBody, signature, env.STRIPE_WEBHOOK_SECRET);

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { BuyNowButton } from "@/components/payments/buy-now-button";
 import { formatCurrency } from "@/lib/utils";
 import type { Course, User } from "@/types";
 
@@ -14,10 +16,13 @@ interface Props {
 
 export function CourseSummaryCard({ course, hideInstructor }: Props) {
   const thumb = course.thumbnail?.url;
-  const instructorName =
+  const instructor =
     typeof course.instructor === "object" && course.instructor !== null
-      ? (course.instructor as Pick<User, "name">).name
+      ? (course.instructor as Pick<User, "_id" | "name">)
       : null;
+  const instructorName = instructor?.name ?? null;
+  const instructorId =
+    instructor?._id ?? (typeof course.instructor === "string" ? course.instructor : "");
 
   return (
     <Card className="flex h-full flex-col overflow-hidden rounded-xs transition-shadow hover:shadow-lg">
@@ -61,14 +66,20 @@ export function CourseSummaryCard({ course, hideInstructor }: Props) {
           </div>
         ) : null}
       </CardContent>
-      <CardFooter className="flex items-center justify-between border-t p-4">
-        <span className="text-base font-semibold">{formatCurrency(course.price)}</span>
-        <Link
-          href={`/courses/${course._id}`}
-          className="text-sm font-medium text-primary hover:underline"
-        >
-          View
-        </Link>
+      <CardFooter className="flex flex-col gap-2 border-t p-4">
+        <div className="flex w-full items-center justify-between">
+          <span className="text-base font-semibold">{formatCurrency(course.price)}</span>
+          <Button asChild variant="ghost" size="sm" className="rounded-xs">
+            <Link href={`/courses/${course._id}`}>View</Link>
+          </Button>
+        </div>
+        <BuyNowButton
+          courseId={course._id}
+          price={course.price}
+          instructorId={instructorId}
+          size="sm"
+          fullWidth
+        />
       </CardFooter>
     </Card>
   );
