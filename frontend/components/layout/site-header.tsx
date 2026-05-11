@@ -42,7 +42,7 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "relative px-5 py-2 text-sm transition-all duration-300 rounded-full",
+                  "relative px-5 py-3 text-sm transition-all duration-300 rounded-full",
                   isActive
                     ? "text-[#7C3AED] font-bold"
                     : "text-muted-foreground hover:text-foreground font-medium",

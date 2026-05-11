@@ -66,7 +66,12 @@ export function CourseSummaryCard({ course, hideInstructor }: Props) {
       </CardHeader>
       <CardContent className="mt-auto space-y-2 p-4 pt-0">
         {!hideInstructor && instructorName ? (
-          <p className="text-xs text-muted-foreground">By {instructorName}</p>
+          <p className="text-xs text-muted-foreground">
+            By{" "}
+            <span className="italic font-semibold text-gray-700">
+              {instructorName}
+            </span>{" "}
+          </p>
         ) : null}
         {course.rating !== undefined && course.rating > 0 ? (
           <div className="flex items-center gap-1 text-xs">

@@ -1,4 +1,3 @@
-import { apiSlice } from "./api-slice";
 import type {
   ApiSuccess,
   InstructorStats,
@@ -6,6 +5,7 @@ import type {
   PurchasedEnrollment,
   ReceiptData,
 } from "@/types";
+import { apiSlice } from "./api-slice";
 
 export interface CheckoutSessionResponse {
   url: string;
@@ -27,9 +27,17 @@ export interface SalesListResponse {
 
 export const paymentApi = apiSlice.injectEndpoints({
   endpoints: (build) => ({
-    createCheckoutSession: build.mutation<CheckoutSessionResponse, { courseId: string }>({
-      query: (body) => ({ url: "/payments/checkout-session", method: "POST", body }),
-      transformResponse: (resp: ApiSuccess<CheckoutSessionResponse>) => resp.data,
+    createCheckoutSession: build.mutation<
+      CheckoutSessionResponse,
+      { courseId: string }
+    >({
+      query: (body) => ({
+        url: "/payments/checkout-session",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (resp: ApiSuccess<CheckoutSessionResponse>) =>
+        resp.data,
     }),
 
     getPaymentBySession: build.query<{ payment: Payment }, string>({
@@ -41,11 +49,15 @@ export const paymentApi = apiSlice.injectEndpoints({
 
     listMyPayments: build.query<{ payments: Payment[] }, void>({
       query: () => `/payments/me`,
-      transformResponse: (resp: ApiSuccess<{ payments: Payment[] }>) => resp.data,
+      transformResponse: (resp: ApiSuccess<{ payments: Payment[] }>) =>
+        resp.data,
       providesTags: (result) =>
         result
           ? [
-              ...result.payments.map((p) => ({ type: "Payment" as const, id: p._id })),
+              ...result.payments.map((p) => ({
+                type: "Payment" as const,
+                id: p._id,
+              })),
               { type: "Payment" as const, id: "LIST" },
             ]
           : [{ type: "Payment" as const, id: "LIST" }],
@@ -53,17 +65,28 @@ export const paymentApi = apiSlice.injectEndpoints({
 
     getReceiptData: build.query<{ receipt: ReceiptData }, string>({
       query: (paymentId) => `/payments/${paymentId}/receipt-data`,
-      transformResponse: (resp: ApiSuccess<{ receipt: ReceiptData }>) => resp.data,
-      providesTags: (_res, _err, paymentId) => [{ type: "Payment", id: paymentId }],
+      transformResponse: (resp: ApiSuccess<{ receipt: ReceiptData }>) =>
+        resp.data,
+      providesTags: (_res, _err, paymentId) => [
+        { type: "Payment", id: paymentId },
+      ],
     }),
 
-    getStudentPurchases: build.query<{ enrollments: PurchasedEnrollment[] }, void>({
+    getStudentPurchases: build.query<
+      { enrollments: PurchasedEnrollment[] },
+      void
+    >({
       query: () => `/payments/student/purchases`,
-      transformResponse: (resp: ApiSuccess<{ enrollments: PurchasedEnrollment[] }>) => resp.data,
+      transformResponse: (
+        resp: ApiSuccess<{ enrollments: PurchasedEnrollment[] }>,
+      ) => resp.data,
       providesTags: (result) =>
         result
           ? [
-              ...result.enrollments.map((e) => ({ type: "Enrollment" as const, id: e._id })),
+              ...result.enrollments?.map((e) => ({
+                type: "Enrollment" as const,
+                id: e._id,
+              })),
               { type: "Enrollment" as const, id: "LIST" },
             ]
           : [{ type: "Enrollment" as const, id: "LIST" }],
@@ -71,11 +94,15 @@ export const paymentApi = apiSlice.injectEndpoints({
 
     getInstructorStats: build.query<{ stats: InstructorStats }, void>({
       query: () => `/payments/instructor/stats`,
-      transformResponse: (resp: ApiSuccess<{ stats: InstructorStats }>) => resp.data,
+      transformResponse: (resp: ApiSuccess<{ stats: InstructorStats }>) =>
+        resp.data,
       providesTags: [{ type: "InstructorStats", id: "ME" }],
     }),
 
-    getInstructorSales: build.query<SalesListResponse, { page?: number; limit?: number } | void>({
+    getInstructorSales: build.query<
+      SalesListResponse,
+      { page?: number; limit?: number } | void
+    >({
       query: (params) => {
         const qs = new URLSearchParams();
         if (params?.page) qs.set("page", String(params.page));
@@ -83,14 +110,19 @@ export const paymentApi = apiSlice.injectEndpoints({
         const s = qs.toString();
         return `/payments/instructor/sales${s ? `?${s}` : ""}`;
       },
-      transformResponse: (resp: ApiSuccess<Payment[]> & { meta: SalesListMeta }) => ({
+      transformResponse: (
+        resp: ApiSuccess<Payment[]> & { meta: SalesListMeta },
+      ) => ({
         items: resp.data,
         meta: resp.meta,
       }),
       providesTags: (result) =>
         result
           ? [
-              ...result.items.map((p) => ({ type: "Payment" as const, id: p._id })),
+              ...result.items.map((p) => ({
+                type: "Payment" as const,
+                id: p._id,
+              })),
               { type: "Payment" as const, id: "SALES" },
             ]
           : [{ type: "Payment" as const, id: "SALES" }],

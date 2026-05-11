@@ -23,6 +23,13 @@ interface CourseCardProps {
 
 export function CourseCard({ course, onTogglePublish, onDelete }: CourseCardProps) {
   const thumb = course.thumbnail?.url;
+  const hasPaidEnrollments = (course.paidEnrollmentCount ?? 0) > 0;
+  const deleteBlocked = course.isPublished || hasPaidEnrollments;
+  const deleteBlockedReason = course.isPublished
+    ? "Unpublish the course before deleting."
+    : hasPaidEnrollments
+      ? "Cannot delete — students have purchased this course."
+      : undefined;
 
   return (
     <Card className="overflow-hidden rounded-xs">
@@ -78,6 +85,8 @@ export function CourseCard({ course, onTogglePublish, onDelete }: CourseCardProp
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => onDelete(course)}
+              disabled={deleteBlocked}
+              title={deleteBlockedReason}
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="h-4 w-4" />

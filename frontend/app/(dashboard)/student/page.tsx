@@ -114,13 +114,13 @@ export default function StudentDashboardPage() {
           </Card>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {recent.map((e) => {
+            {recent?.map((e) => {
               const c = e.course;
               const progress = Math.min(100, Math.max(0, e.progress));
               return (
                 <Card key={e._id} className="rounded-xs">
                   <CardContent className="space-y-3 p-4">
-                    <p className="line-clamp-2 font-medium">{c.title}</p>
+                    <p className="line-clamp-2 font-medium">{c?.title}</p>
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Progress</span>
@@ -134,7 +134,7 @@ export default function StudentDashboardPage() {
                       </div>
                     </div>
                     <Button asChild size="sm" className="w-full rounded-xs">
-                      <Link href={`/courses/${c._id}`}>
+                      <Link href={`/courses/${c?._id}`}>
                         <BookOpen className="h-4 w-4" />
                         Continue Learning
                       </Link>

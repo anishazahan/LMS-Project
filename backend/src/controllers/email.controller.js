@@ -1,9 +1,9 @@
-import { asyncHandler } from '../utils/asyncHandler.js';
-import { ApiError } from '../utils/ApiError.js';
-import { sendSuccess } from '../utils/ApiResponse.js';
-import { sendEmail } from '../services/email.service.js';
 import Course from '../models/course.model.js';
 import Enrollment from '../models/enrollment.model.js';
+import { sendEmail } from '../services/email.service.js';
+import { ApiError } from '../utils/ApiError.js';
+import { sendSuccess } from '../utils/ApiResponse.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const moduleReleaseNotification = asyncHandler(async (req, res) => {
   const { courseId, moduleName } = req.body;

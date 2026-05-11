@@ -8,6 +8,7 @@ import { uploadFromBuffer, destroy } from '../services/cloudinary.service.js';
 import Course from '../models/course.model.js';
 import Module from '../models/module.model.js';
 import User from '../models/user.model.js';
+import Enrollment from '../models/enrollment.model.js';
 
 const isOwnerOrAdmin = (course, user) =>
   course.instructor.toString() === user._id.toString() || user.role === ROLES.ADMIN;
@@ -61,7 +62,19 @@ export const listInstructorCourses = asyncHandler(async (req, res) => {
     Course.countDocuments(filter),
   ]);
 
-  return sendSuccess(res, paginate(items, { page, limit, total }));
+  const counts = items.length
+    ? await Enrollment.aggregate([
+        { $match: { course: { $in: items.map((c) => c._id) }, paymentStatus: 'completed' } },
+        { $group: { _id: '$course', count: { $sum: 1 } } },
+      ])
+    : [];
+  const countByCourse = new Map(counts.map((c) => [c._id.toString(), c.count]));
+  const data = items.map((c) => ({
+    ...c.toObject(),
+    paidEnrollmentCount: countByCourse.get(c._id.toString()) || 0,
+  }));
+
+  return sendSuccess(res, paginate(data, { page, limit, total }));
 });
 
 export const getCourse = asyncHandler(async (req, res) => {
@@ -69,8 +82,12 @@ export const getCourse = asyncHandler(async (req, res) => {
     .populate('instructor', 'name email profileImage bio')
     .populate({ path: 'modules', options: { sort: { order: 1 } } });
   if (!course) throw ApiError.notFound('Course not found');
-  const enrolledSet = await fetchEnrolledSet(req.userId);
-  return sendSuccess(res, { data: { course: tagEnrollment(course, enrolledSet) } });
+  const [enrolledSet, paidEnrollmentCount] = await Promise.all([
+    fetchEnrolledSet(req.userId),
+    Enrollment.countDocuments({ course: course._id, paymentStatus: 'completed' }),
+  ]);
+  const tagged = tagEnrollment(course, enrolledSet);
+  return sendSuccess(res, { data: { course: { ...tagged, paidEnrollmentCount } } });
 });
 
 export const createCourse = asyncHandler(async (req, res) => {
@@ -99,6 +116,19 @@ export const deleteCourse = asyncHandler(async (req, res) => {
   const course = await Course.findById(req.params.id);
   if (!course) throw ApiError.notFound('Course not found');
   if (!isOwnerOrAdmin(course, req.user)) throw ApiError.forbidden('Not authorized');
+
+  if (req.user.role !== ROLES.ADMIN) {
+    if (course.isPublished) {
+      throw ApiError.badRequest('Cannot delete a published course. Unpublish it first.');
+    }
+    const paidEnrollment = await Enrollment.exists({
+      course: course._id,
+      paymentStatus: 'completed',
+    });
+    if (paidEnrollment) {
+      throw ApiError.badRequest('Cannot delete a course that has paid student enrollments.');
+    }
+  }
 
   if (course.thumbnail?.publicId) {
     await destroy(course.thumbnail.publicId, 'image').catch(() => {});

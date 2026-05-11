@@ -228,7 +228,7 @@ function TestimonialCard({ review, index }: { review: Review; index: number }) {
             {name}
           </p>
           <p className="truncate text-[10px] font-bold uppercase tracking-widest text-[#7C3AED]">
-            Student on {courseTitle}
+            <span className="text-gray-600"> Student on </span> {courseTitle}
           </p>
           <p className="text-[10px] text-muted-foreground mt-1">
             {formatDate(review.createdAt)}

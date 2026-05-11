@@ -47,13 +47,13 @@ export default function StudentCoursesPage() {
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {enrollments.map((e) => {
-            const c = e.course;
-            const thumb = c.thumbnail?.url;
+          {enrollments?.map((e) => {
+            const c = e?.course;
+            const thumb = c?.thumbnail?.url;
             const progress = Math.min(100, Math.max(0, e.progress));
             const instructorName =
-              typeof c.instructor === "object" && c.instructor !== null
-                ? (c.instructor as { name?: string }).name
+              typeof c?.instructor === "object" && c?.instructor !== null
+                ? (c?.instructor as { name?: string }).name
                 : null;
 
             return (
@@ -63,7 +63,7 @@ export default function StudentCoursesPage() {
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={thumb}
-                      alt={c.title}
+                      alt={c?.title}
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -75,7 +75,7 @@ export default function StudentCoursesPage() {
                 <CardContent className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="line-clamp-2 font-medium">{c.title}</p>
+                      <p className="line-clamp-2 font-medium">{c?.title}</p>
                       {instructorName ? (
                         <p className="text-xs text-muted-foreground">
                           By {instructorName}
@@ -103,7 +103,7 @@ export default function StudentCoursesPage() {
                   </div>
 
                   <Button asChild className="w-full rounded-xs">
-                    <Link href={`/courses/${c._id}`}>
+                    <Link href={`/courses/${c?._id}`}>
                       <BookOpen className="h-4 w-4" />
                       Continue Learning
                       <ArrowRight className="h-4 w-4" />

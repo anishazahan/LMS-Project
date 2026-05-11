@@ -79,6 +79,13 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
   }
 
   const modules = (modulesData?.modules ?? []).slice().sort((a, b) => a.order - b.order);
+  const hasPaidEnrollments = (course.paidEnrollmentCount ?? 0) > 0;
+  const deleteBlocked = course.isPublished || hasPaidEnrollments;
+  const deleteBlockedReason = course.isPublished
+    ? "Unpublish the course before deleting."
+    : hasPaidEnrollments
+      ? "Cannot delete — students have purchased this course."
+      : undefined;
 
   const handleUpdateCourse = async (values: CourseFormValues) => {
     try {
@@ -170,6 +177,8 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
           <Button
             onClick={() => setConfirmDelete(true)}
             variant="destructive"
+            disabled={deleteBlocked}
+            title={deleteBlockedReason}
             className="rounded-xs"
           >
             <Trash2 className="h-4 w-4" />

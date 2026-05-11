@@ -1,9 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { LogOut, User as UserIcon, LayoutDashboard } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +10,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { logout } from "@/store/slices/auth.slice";
 import { dashboardRouteFor, ROUTES } from "@/lib/constants";
 import { getInitials } from "@/lib/utils";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { logout } from "@/store/slices/auth.slice";
+import { LayoutDashboard, LogOut, User as UserIcon } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function UserMenu() {
   const [mounted, setMounted] = useState(false);
@@ -32,12 +32,10 @@ export function UserMenu() {
   if (!mounted) {
     return (
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" className="opacity-0">
+        <Button variant="ghost" className="opacity-0">
           Log in
         </Button>
-        <Button size="sm" className="opacity-0">
-          Sign up
-        </Button>
+        <Button className="opacity-0">Sign up</Button>
       </div>
     );
   }
@@ -45,10 +43,10 @@ export function UserMenu() {
   if (!user) {
     return (
       <div className="flex items-center gap-2">
-        <Button asChild variant="ghost" size="sm">
+        <Button asChild variant="ghost">
           <Link href={ROUTES.LOGIN}>Log in</Link>
         </Button>
-        <Button asChild size="sm">
+        <Button asChild>
           <Link href={ROUTES.REGISTER}>Sign up</Link>
         </Button>
       </div>
@@ -76,7 +74,9 @@ export function UserMenu() {
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-0.5">
             <p className="text-sm font-medium leading-none">{user.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user.email}
+            </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

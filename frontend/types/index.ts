@@ -48,6 +48,7 @@ export interface Course {
   modules?: string[] | Module[];
   enrolledStudents?: string[];
   isEnrolled?: boolean;
+  paidEnrollmentCount?: number;
   rating?: number;
   reviewCount?: number;
   createdAt?: string;
