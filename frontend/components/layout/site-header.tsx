@@ -20,7 +20,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b shadow-sm bg-background/80 backdrop-blur-md transition-all duration-300">
       <div className="container flex h-[80px] items-center justify-between">
-        {/* Fancy Logo Design */}
+        {/*  Logo  */}
         <Link href="/" className="group flex items-center gap-3">
           <motion.div
             whileHover={{ rotate: -12, scale: 1.1 }}
