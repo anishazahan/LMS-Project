@@ -32,6 +32,7 @@ export const createIntent = asyncHandler(async (req, res) => {
   const payment = await Payment.create({
     student: req.userId,
     course: courseId,
+    instructor: course.instructor,
     amount: course.price,
     currency: intent.currency,
     stripePaymentIntentId: intent.id,

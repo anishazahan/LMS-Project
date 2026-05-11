@@ -16,17 +16,22 @@ export const emailTemplates = {
     `),
   }),
 
-  purchaseConfirmation: (userName, courseName, amount) => ({
+  purchaseConfirmation: (userName, courseName, amount, transactionId, paymentId) => ({
     subject: `Order Confirmation - ${courseName}`,
     html: wrap(`
       <h1 style="color:#333;">Purchase Confirmed!</h1>
       <p>Hi ${userName},</p>
+      <p>Your enrollment is active. Here are your transaction details:</p>
       <div style="background:#f5f5f5;padding:20px;border-radius:8px;margin:20px 0;">
         <p><strong>Course:</strong> ${courseName}</p>
         <p><strong>Amount Paid:</strong> $${amount}</p>
+        ${transactionId ? `<p><strong>Transaction ID:</strong> ${transactionId}</p>` : ''}
       </div>
       <p>You now have lifetime access to this course.</p>
-      <p><a href="${env.FRONTEND_URL}/student" style="background:#007bff;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;">View Your Courses</a></p>
+      <p>
+        <a href="${env.FRONTEND_URL}/student/purchased" style="background:#007bff;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;margin-right:8px;">View Your Courses</a>
+        ${paymentId ? `<a href="${env.FRONTEND_URL}/payments/${paymentId}/receipt" style="background:#10b981;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;">Download Receipt</a>` : ''}
+      </p>
     `),
   }),
 
