@@ -61,10 +61,21 @@ export const getInstructorWithCourses = asyncHandler(async (req, res) => {
   if (!instructor) throw ApiError.notFound('Instructor not found');
 
   const courses = await Course.find({ instructor: id, isPublished: true })
-    .select('title shortDescription thumbnail price category level rating reviewCount createdAt')
+    .select('title shortDescription thumbnail price category level rating reviewCount createdAt instructor')
     .sort('-createdAt');
 
-  return sendSuccess(res, { data: { instructor, courses } });
+  let enrolledSet = new Set();
+  if (req.userId) {
+    const viewer = await User.findById(req.userId).select('enrolledCourses').lean();
+    enrolledSet = new Set((viewer?.enrolledCourses || []).map((cid) => cid.toString()));
+  }
+
+  const taggedCourses = courses.map((c) => ({
+    ...c.toObject(),
+    isEnrolled: enrolledSet.has(c._id.toString()),
+  }));
+
+  return sendSuccess(res, { data: { instructor, courses: taggedCourses } });
 });
 
 export const updateProfile = asyncHandler(async (req, res) => {

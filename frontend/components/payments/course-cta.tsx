@@ -8,7 +8,7 @@ import { useIsEnrolled } from "@/lib/use-is-enrolled";
 import type { Course } from "@/types";
 
 interface CourseCtaProps {
-  course: Pick<Course, "_id" | "price" | "enrolledStudents"> & {
+  course: Pick<Course, "_id" | "price" | "enrolledStudents" | "isEnrolled"> & {
     instructor: Course["instructor"];
   };
   size?: "sm" | "default" | "lg";

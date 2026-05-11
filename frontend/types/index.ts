@@ -47,6 +47,7 @@ export interface Course {
   instructor: Pick<User, "_id" | "name" | "email"> | string;
   modules?: string[] | Module[];
   enrolledStudents?: string[];
+  isEnrolled?: boolean;
   rating?: number;
   reviewCount?: number;
   createdAt?: string;

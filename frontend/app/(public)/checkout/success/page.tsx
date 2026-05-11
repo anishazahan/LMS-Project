@@ -12,6 +12,7 @@ import {
   useGetPaymentBySessionQuery,
   useLazyGetReceiptDataQuery,
 } from "@/lib/api/payment.api";
+import { useLazyGetMeQuery } from "@/lib/api/user.api";
 import { downloadReceipt } from "@/lib/receipt-pdf";
 import { formatCurrency } from "@/lib/utils";
 import type { Course } from "@/types";
@@ -47,6 +48,8 @@ function SuccessContent() {
   const payment = data?.payment;
   const isFinalized = payment?.status === "succeeded";
 
+  const [refreshMe] = useLazyGetMeQuery();
+
   useEffect(() => {
     if (!sessionId || isFinalized || pollIndex >= POLL_INTERVALS.length) return;
     const t = setTimeout(() => {
@@ -55,6 +58,12 @@ function SuccessContent() {
     }, POLL_INTERVALS[pollIndex]);
     return () => clearTimeout(t);
   }, [sessionId, isFinalized, pollIndex, refetch]);
+
+  // Once activation lands, refresh /me so user.enrolledCourses includes the new course,
+  // and Continue Learning shows immediately wherever the card is rendered.
+  useEffect(() => {
+    if (isFinalized) refreshMe();
+  }, [isFinalized, refreshMe]);
 
   const course = useMemo(() => {
     if (!payment?.course || typeof payment.course === "string") return null;

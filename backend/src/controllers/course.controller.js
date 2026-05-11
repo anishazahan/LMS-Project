@@ -7,9 +7,21 @@ import { parsePagination } from '../utils/pagination.js';
 import { uploadFromBuffer, destroy } from '../services/cloudinary.service.js';
 import Course from '../models/course.model.js';
 import Module from '../models/module.model.js';
+import User from '../models/user.model.js';
 
 const isOwnerOrAdmin = (course, user) =>
   course.instructor.toString() === user._id.toString() || user.role === ROLES.ADMIN;
+
+const fetchEnrolledSet = async (userId) => {
+  if (!userId) return new Set();
+  const user = await User.findById(userId).select('enrolledCourses').lean();
+  return new Set((user?.enrolledCourses || []).map((id) => id.toString()));
+};
+
+const tagEnrollment = (courseOrDoc, enrolledSet) => {
+  const obj = typeof courseOrDoc.toObject === 'function' ? courseOrDoc.toObject() : courseOrDoc;
+  return { ...obj, isEnrolled: enrolledSet.has(obj._id.toString()) };
+};
 
 export const listCourses = asyncHandler(async (req, res) => {
   const { page, limit, skip } = parsePagination(req.query);
@@ -19,16 +31,18 @@ export const listCourses = asyncHandler(async (req, res) => {
   if (req.query.instructor) filter.instructor = req.query.instructor;
   if (req.query.search) filter.$text = { $search: req.query.search };
 
-  const [items, total] = await Promise.all([
+  const [items, total, enrolledSet] = await Promise.all([
     Course.find(filter)
       .populate('instructor', 'name email profileImage bio')
       .sort('-createdAt')
       .skip(skip)
       .limit(limit),
     Course.countDocuments(filter),
+    fetchEnrolledSet(req.userId),
   ]);
 
-  return sendSuccess(res, paginate(items, { page, limit, total }));
+  const data = items.map((c) => tagEnrollment(c, enrolledSet));
+  return sendSuccess(res, paginate(data, { page, limit, total }));
 });
 
 export const listInstructorCourses = asyncHandler(async (req, res) => {
@@ -55,7 +69,8 @@ export const getCourse = asyncHandler(async (req, res) => {
     .populate('instructor', 'name email profileImage bio')
     .populate({ path: 'modules', options: { sort: { order: 1 } } });
   if (!course) throw ApiError.notFound('Course not found');
-  return sendSuccess(res, { data: { course } });
+  const enrolledSet = await fetchEnrolledSet(req.userId);
+  return sendSuccess(res, { data: { course: tagEnrollment(course, enrolledSet) } });
 });
 
 export const createCourse = asyncHandler(async (req, res) => {

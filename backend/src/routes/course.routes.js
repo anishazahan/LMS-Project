@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { protect } from '../middlewares/auth.middleware.js';
+import { protect, optionalAuth } from '../middlewares/auth.middleware.js';
 import { authorize } from '../middlewares/rbac.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
 import { uploadImage, handleMulter } from '../middlewares/upload.middleware.js';
@@ -25,9 +25,9 @@ import { idParam } from '../validators/common.validator.js';
 
 const router = Router();
 
-// Public
-router.get('/', validate({ query: listCourseQuery }), listCourses);
-router.get('/:id', validate({ params: idParam }), getCourse);
+// Public (optionalAuth so logged-in users get isEnrolled flags on each course)
+router.get('/', optionalAuth, validate({ query: listCourseQuery }), listCourses);
+router.get('/:id', optionalAuth, validate({ params: idParam }), getCourse);
 
 // Authenticated routes below
 router.use(protect);

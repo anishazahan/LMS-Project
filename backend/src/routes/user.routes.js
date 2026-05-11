@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { protect } from '../middlewares/auth.middleware.js';
+import { protect, optionalAuth } from '../middlewares/auth.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
 import { uploadImage, handleMulter } from '../middlewares/upload.middleware.js';
 import {
@@ -23,7 +23,12 @@ const router = Router();
 
 // Public — instructors directory (used by landing page)
 router.get('/instructors', validate({ query: instructorListQuery }), listInstructors);
-router.get('/instructors/:id', validate({ params: idParam }), getInstructorWithCourses);
+router.get(
+  '/instructors/:id',
+  optionalAuth,
+  validate({ params: idParam }),
+  getInstructorWithCourses
+);
 
 router.use(protect);
 
