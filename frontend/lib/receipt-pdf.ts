@@ -1,7 +1,7 @@
-import { jsPDF } from "jspdf";
 import type { ReceiptData } from "@/types";
+import { jsPDF } from "jspdf";
 
-const PRIMARY: [number, number, number] = [29, 78, 216];
+const PRIMARY: [number, number, number] = [124, 58, 237];
 const MUTED: [number, number, number] = [107, 114, 128];
 const TEXT: [number, number, number] = [17, 24, 39];
 
@@ -70,7 +70,11 @@ export const generateReceiptPdf = (data: ReceiptData): Blob => {
     y += 22;
   };
 
-  const row = (label: string, value: string, color: [number, number, number] = TEXT) => {
+  const row = (
+    label: string,
+    value: string,
+    color: [number, number, number] = TEXT,
+  ) => {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(...MUTED);
@@ -108,7 +112,7 @@ export const generateReceiptPdf = (data: ReceiptData): Blob => {
     `This is an electronically generated receipt from ${data.platform.name}.`,
     pageWidth / 2,
     footerY + 16,
-    { align: "center" }
+    { align: "center" },
   );
 
   return doc.output("blob");
