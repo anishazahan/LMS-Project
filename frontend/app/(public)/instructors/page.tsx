@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { InstructorSummaryCard } from "@/components/public/instructor-summary-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { InstructorSummaryCard } from "@/components/public/instructor-summary-card";
 import { useListPublicInstructorsQuery } from "@/lib/api/instructor.api";
+import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function PublicInstructorsPage() {
   const [search, setSearch] = useState("");
@@ -32,7 +32,7 @@ export default function PublicInstructorsPage() {
       <header className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Instructors</h1>
         <p className="text-sm text-muted-foreground">
-          Meet the instructors teaching on EDUCART.
+          Meet the instructors teaching on E-Study.
         </p>
       </header>
 

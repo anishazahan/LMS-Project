@@ -1,28 +1,27 @@
 import mongoose from 'mongoose';
-import { asyncHandler } from '../utils/asyncHandler.js';
-import { ApiError } from '../utils/ApiError.js';
-import { sendSuccess, paginate } from '../utils/ApiResponse.js';
-import { HTTP } from '../constants/httpStatus.js';
-import { logger } from '../config/logger.js';
 import { env } from '../config/env.js';
-import {
-  createCheckoutSession as stripeCreateCheckoutSession,
-  retrieveCheckoutSession,
-  constructWebhookEvent,
-} from '../services/stripe.service.js';
+import { logger } from '../config/logger.js';
+import { HTTP } from '../constants/httpStatus.js';
+import Course from '../models/course.model.js';
+import Enrollment from '../models/enrollment.model.js';
+import Payment from '../models/payment.model.js';
 import {
   activatePayment,
   markExpired,
   markFailed,
 } from '../services/payment.service.js';
+import {
+  constructWebhookEvent,
+  retrieveCheckoutSession,
+  createCheckoutSession as stripeCreateCheckoutSession,
+} from '../services/stripe.service.js';
+import { ApiError } from '../utils/ApiError.js';
+import { paginate, sendSuccess } from '../utils/ApiResponse.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 const populatePaymentForView = (id) =>
   Payment.findById(id)
     .populate('course', 'title price thumbnail')
     .populate('instructor', 'name email');
-import Course from '../models/course.model.js';
-import Payment from '../models/payment.model.js';
-import Enrollment from '../models/enrollment.model.js';
-import User from '../models/user.model.js';
 
 const SESSION_REUSE_WINDOW_MS = 30 * 60 * 1000;
 
@@ -163,7 +162,7 @@ export const getReceiptData = asyncHandler(async (req, res) => {
   return sendSuccess(res, {
     data: {
       receipt: {
-        platform: { name: 'EDUCART' },
+        platform: { name: 'E-Study' },
         user: { name: payment.student.name, email: payment.student.email },
         course: { title: payment.course.title },
         instructor: { name: payment.instructor?.name || '—' },

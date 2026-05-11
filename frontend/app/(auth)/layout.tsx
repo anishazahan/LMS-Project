@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { GraduationCap } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
 import { dashboardRouteFor } from "@/lib/constants";
+import { useAppSelector } from "@/store/hooks";
+import { GraduationCap } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const { hydrated, status, user } = useAppSelector((s) => s.auth);
 
@@ -22,10 +26,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <header className="container flex h-14 items-center">
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <GraduationCap className="h-5 w-5" />
-          <span>EDUCART</span>
+          <span>E-Study</span>
         </Link>
       </header>
-      <main className="flex flex-1 items-center justify-center p-6">{children}</main>
+      <main className="flex flex-1 items-center justify-center p-6">
+        {children}
+      </main>
     </div>
   );
 }

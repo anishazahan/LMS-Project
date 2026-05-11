@@ -1,22 +1,22 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  BookOpen,
-  Users,
-  CreditCard,
-  Settings,
-  GraduationCap,
-  X,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setSidebarOpen } from "@/store/slices/ui.slice";
 import { ROLES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setSidebarOpen } from "@/store/slices/ui.slice";
+import {
+  BookOpen,
+  CreditCard,
+  GraduationCap,
+  LayoutDashboard,
+  Settings,
+  Users,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface NavItem {
   href: string;
@@ -58,13 +58,13 @@ export function DashboardSidebar() {
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r bg-background transition-transform md:static md:translate-x-0",
-          open ? "translate-x-0" : "-translate-x-full"
+          open ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex h-14 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <GraduationCap className="h-5 w-5" />
-            <span>EDUCART</span>
+            <span>E-Study</span>
           </Link>
           <Button
             variant="ghost"
@@ -88,7 +88,7 @@ export function DashboardSidebar() {
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
                   active
                     ? "bg-accent text-accent-foreground font-medium"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
               >
                 <Icon className="h-4 w-4" />

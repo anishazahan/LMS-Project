@@ -7,12 +7,12 @@ const wrap = (inner) => `
 
 export const emailTemplates = {
   welcomeEmail: (userName) => ({
-    subject: 'Welcome to EDUCART!',
+    subject: 'Welcome to E-Study!',
     html: wrap(`
-      <h1 style="color:#333;">Welcome to EDUCART!</h1>
+      <h1 style="color:#333;">Welcome to E-Study!</h1>
       <p>Hi ${userName},</p>
-      <p>Thank you for joining EDUCART. Browse courses, learn from experts, and earn certificates.</p>
-      <p>Happy learning!<br/>The EDUCART Team</p>
+      <p>Thank you for joining E-Study. Browse courses, learn from experts, and earn certificates.</p>
+      <p>Happy learning!<br/>The E-Study Team</p>
     `),
   }),
 

@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { StarRating } from "@/components/reviews/star-rating";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StarRating } from "@/components/reviews/star-rating";
 import { useGetTestimonialsQuery } from "@/lib/api/review.api";
 import { formatDate, getInitials } from "@/lib/utils";
 import type { Review } from "@/types";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 const AUTO_ROTATE_MS = 6000;
 
@@ -39,7 +39,10 @@ function useResponsivePerView() {
 export function TestimonialsSection() {
   const { data, isLoading } = useGetTestimonialsQuery({ limit: 12 });
   const perView = useResponsivePerView();
-  const slides = useMemo(() => chunk(data?.items ?? [], perView), [data?.items, perView]);
+  const slides = useMemo(
+    () => chunk(data?.items ?? [], perView),
+    [data?.items, perView],
+  );
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -47,7 +50,10 @@ export function TestimonialsSection() {
 
   useEffect(() => {
     if (paused || slides.length <= 1) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % slides.length), AUTO_ROTATE_MS);
+    const t = setInterval(
+      () => setIndex((i) => (i + 1) % slides.length),
+      AUTO_ROTATE_MS,
+    );
     return () => clearInterval(t);
   }, [paused, slides.length]);
 
@@ -79,9 +85,12 @@ export function TestimonialsSection() {
       onMouseLeave={() => setPaused(false)}
     >
       <div className="text-center mb-12 space-y-3">
-        <h2 className="text-3xl font-bold tracking-tight">What learners are saying</h2>
+        <h2 className="text-3xl font-bold tracking-tight">
+          What learners are saying
+        </h2>
         <p className="text-muted-foreground max-w-xl mx-auto">
-          Honest feedback from students and instructors who&apos;ve studied on EDUCART.
+          Honest feedback from students and instructors who&apos;ve studied on
+          E-Study.
         </p>
       </div>
 
@@ -94,7 +103,11 @@ export function TestimonialsSection() {
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             className={`grid gap-4 ${
-              perView === 1 ? "" : perView === 2 ? "md:grid-cols-2" : "md:grid-cols-3"
+              perView === 1
+                ? ""
+                : perView === 2
+                  ? "md:grid-cols-2"
+                  : "md:grid-cols-3"
             }`}
           >
             {current.map((review) => (
@@ -123,7 +136,9 @@ export function TestimonialsSection() {
                 variant="outline"
                 size="icon"
                 className="h-9 w-9 rounded-full"
-                onClick={() => setIndex((i) => (i - 1 + slides.length) % slides.length)}
+                onClick={() =>
+                  setIndex((i) => (i - 1 + slides.length) % slides.length)
+                }
                 aria-label="Previous testimonials"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -151,12 +166,14 @@ function TestimonialCard({ review }: { review: Review }) {
   const user = review.user;
   const profileImage = user?.profileImage;
   const avatarUrl =
-    typeof profileImage === "object" && profileImage !== null ? profileImage.url ?? null : null;
+    typeof profileImage === "object" && profileImage !== null
+      ? (profileImage.url ?? null)
+      : null;
   const name = user?.name ?? "Anonymous learner";
   const courseTitle =
     typeof review.course === "object" && review.course !== null
-      ? (review.course as { title?: string }).title ?? "an EDUCART course"
-      : "an EDUCART course";
+      ? ((review.course as { title?: string }).title ?? "an E-Study course")
+      : "an E-Study course";
 
   return (
     <motion.div
@@ -165,7 +182,10 @@ function TestimonialCard({ review }: { review: Review }) {
       className="group relative h-full overflow-hidden rounded-xs border bg-background/60 p-6 backdrop-blur-sm"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
-      <Quote className="absolute right-4 top-4 h-8 w-8 text-primary/10" aria-hidden />
+      <Quote
+        className="absolute right-4 top-4 h-8 w-8 text-primary/10"
+        aria-hidden
+      />
 
       <div className="relative z-10 flex h-full flex-col gap-4">
         <div className="flex items-center gap-3">
@@ -175,7 +195,9 @@ function TestimonialCard({ review }: { review: Review }) {
           </Avatar>
           <div className="min-w-0">
             <p className="truncate font-medium">{name}</p>
-            <p className="truncate text-xs text-muted-foreground">on {courseTitle}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              on {courseTitle}
+            </p>
           </div>
         </div>
 

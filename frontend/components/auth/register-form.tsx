@@ -1,14 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -17,9 +9,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useRegisterMutation } from "@/lib/api/auth.api";
 import { dashboardRouteFor, ROUTES } from "@/lib/constants";
-import { registerSchema, type RegisterValues } from "@/lib/validation/auth.schema";
+import {
+  registerSchema,
+  type RegisterValues,
+} from "@/lib/validation/auth.schema";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -48,26 +51,44 @@ export function RegisterForm() {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-2xl">Create account</CardTitle>
-        <CardDescription>Start learning or teaching on EDUCART.</CardDescription>
+        <CardDescription>
+          Start learning or teaching on E-Study.
+        </CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit} noValidate>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full name</Label>
             <Input id="name" autoComplete="name" {...register("name")} />
-            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+            {errors.name && (
+              <p className="text-xs text-destructive">{errors.name.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" {...register("email")} />
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              {...register("email")}
+            />
+            {errors.email && (
+              <p className="text-xs text-destructive">{errors.email.message}</p>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" autoComplete="new-password" {...register("password")} />
+              <Input
+                id="password"
+                type="password"
+                autoComplete="new-password"
+                {...register("password")}
+              />
               {errors.password && (
-                <p className="text-xs text-destructive">{errors.password.message}</p>
+                <p className="text-xs text-destructive">
+                  {errors.password.message}
+                </p>
               )}
             </div>
             <div className="space-y-2">
@@ -79,7 +100,9 @@ export function RegisterForm() {
                 {...register("confirmPassword")}
               />
               {errors.confirmPassword && (
-                <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
+                <p className="text-xs text-destructive">
+                  {errors.confirmPassword.message}
+                </p>
               )}
             </div>
           </div>
@@ -87,11 +110,21 @@ export function RegisterForm() {
             <Label>I want to</Label>
             <div className="flex gap-2">
               <label className="flex flex-1 cursor-pointer items-center gap-2 rounded-md border p-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent">
-                <input type="radio" value="student" {...register("role")} className="accent-primary" />
+                <input
+                  type="radio"
+                  value="student"
+                  {...register("role")}
+                  className="accent-primary"
+                />
                 Learn
               </label>
               <label className="flex flex-1 cursor-pointer items-center gap-2 rounded-md border p-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent">
-                <input type="radio" value="instructor" {...register("role")} className="accent-primary" />
+                <input
+                  type="radio"
+                  value="instructor"
+                  {...register("role")}
+                  className="accent-primary"
+                />
                 Teach
               </label>
             </div>
@@ -104,7 +137,10 @@ export function RegisterForm() {
           </Button>
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href={ROUTES.LOGIN} className="font-medium text-primary hover:underline">
+            <Link
+              href={ROUTES.LOGIN}
+              className="font-medium text-primary hover:underline"
+            >
               Log in
             </Link>
           </p>
