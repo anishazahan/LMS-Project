@@ -56,16 +56,25 @@ export function BuyNowButton({
     try {
       const result = await createCheckoutSession({ courseId }).unwrap();
       console.log("result", result);
-      if (result?.url) {
-        window.location.assign(result.url);
+
+      // support multiple response shapes: result.url OR result.data.url
+      const raw = result as unknown as {
+        url?: string;
+        data?: { url?: string; session?: { url?: string } };
+      };
+      const redirectUrl = raw?.url ?? raw?.data?.url ?? raw?.data?.session?.url;
+
+      if (redirectUrl) {
+        window.location.assign(redirectUrl);
       } else {
         toast.error("Checkout failed", {
           description: "No redirect URL returned.",
         });
       }
     } catch (err) {
-      const e = err as FetchError;
-      const msg = e?.data?.message || "Could not start checkout";
+      const e = err as FetchError & { message?: string };
+      const msg = e?.data?.message ?? e?.message ?? "Could not start checkout";
+
       if (e?.status === 409) {
         toast.warning("Already purchased", { description: msg });
       } else if (e?.status === 403) {
@@ -77,7 +86,6 @@ export function BuyNowButton({
       }
     }
   };
-
   return (
     <Button
       onClick={handleClick}

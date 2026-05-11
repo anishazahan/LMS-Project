@@ -5,6 +5,16 @@ import authReducer from "./slices/auth.slice";
 import uiReducer from "./slices/ui.slice";
 import { errorToastMiddleware } from "./middleware/error-toast";
 
+// Eagerly register all injected endpoints so HMR / lazy component loads can't
+// leave the middleware with a stale definitions map.
+import "@/lib/api/auth.api";
+import "@/lib/api/user.api";
+import "@/lib/api/course.api";
+import "@/lib/api/module.api";
+import "@/lib/api/lesson.api";
+import "@/lib/api/instructor.api";
+import "@/lib/api/payment.api";
+
 export const makeStore = () => {
   const store = configureStore({
     reducer: {

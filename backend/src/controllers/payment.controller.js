@@ -15,6 +15,10 @@ import {
   markExpired,
   markFailed,
 } from '../services/payment.service.js';
+const populatePaymentForView = (id) =>
+  Payment.findById(id)
+    .populate('course', 'title price thumbnail')
+    .populate('instructor', 'name email');
 import Course from '../models/course.model.js';
 import Payment from '../models/payment.model.js';
 import Enrollment from '../models/enrollment.model.js';
@@ -106,13 +110,31 @@ export const createCheckoutSession = asyncHandler(async (req, res) => {
 
 export const getPaymentBySession = asyncHandler(async (req, res) => {
   const { sessionId } = req.params;
-  const payment = await Payment.findOne({ stripeSessionId: sessionId })
+  let payment = await Payment.findOne({ stripeSessionId: sessionId })
     .populate('course', 'title price thumbnail')
     .populate('instructor', 'name email');
   if (!payment) throw ApiError.notFound('Payment not found');
   if (!payment.student.equals(req.userId)) {
     throw ApiError.forbidden('Not allowed to view this payment');
   }
+
+  // Webhook fallback: if still pending, verify against Stripe and activate if paid.
+  // activatePayment is idempotent, so this is safe to race with the webhook.
+  if (payment.status === 'pending') {
+    try {
+      const session = await retrieveCheckoutSession(sessionId);
+      if (session?.payment_status === 'paid') {
+        await activatePayment({ payment, session });
+        payment = await populatePaymentForView(payment._id);
+      } else if (session?.status === 'expired') {
+        await markExpired(sessionId);
+        payment = await populatePaymentForView(payment._id);
+      }
+    } catch (err) {
+      logger.warn(`Verify-on-fetch failed for ${sessionId}: ${err.message}`);
+    }
+  }
+
   return sendSuccess(res, { data: { payment } });
 });
 
