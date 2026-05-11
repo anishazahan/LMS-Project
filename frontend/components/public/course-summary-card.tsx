@@ -5,7 +5,7 @@ import { Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BuyNowButton } from "@/components/payments/buy-now-button";
+import { CourseCta } from "@/components/payments/course-cta";
 import { formatCurrency } from "@/lib/utils";
 import type { Course, User } from "@/types";
 
@@ -21,8 +21,6 @@ export function CourseSummaryCard({ course, hideInstructor }: Props) {
       ? (course.instructor as Pick<User, "_id" | "name">)
       : null;
   const instructorName = instructor?.name ?? null;
-  const instructorId =
-    instructor?._id ?? (typeof course.instructor === "string" ? course.instructor : "");
 
   return (
     <Card className="flex h-full flex-col overflow-hidden rounded-xs transition-shadow hover:shadow-lg">
@@ -73,13 +71,7 @@ export function CourseSummaryCard({ course, hideInstructor }: Props) {
             <Link href={`/courses/${course._id}`}>View</Link>
           </Button>
         </div>
-        <BuyNowButton
-          courseId={course._id}
-          price={course.price}
-          instructorId={instructorId}
-          size="sm"
-          fullWidth
-        />
+        <CourseCta course={course} size="sm" fullWidth />
       </CardFooter>
     </Card>
   );

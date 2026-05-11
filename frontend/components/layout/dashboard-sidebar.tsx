@@ -9,8 +9,6 @@ import {
   CreditCard,
   Settings,
   GraduationCap,
-  PlayCircle,
-  BarChart3,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +27,6 @@ interface NavItem {
 const studentNav: NavItem[] = [
   { href: "/student", label: "Overview", icon: LayoutDashboard },
   { href: "/student/courses", label: "My Courses", icon: BookOpen },
-  { href: "/student/learn", label: "Continue Learning", icon: PlayCircle },
   { href: "/student/payments", label: "Payment History", icon: CreditCard },
   { href: "/student/profile", label: "Profile", icon: Settings },
 ];
@@ -38,7 +35,6 @@ const instructorNav: NavItem[] = [
   { href: "/instructor", label: "Overview", icon: LayoutDashboard },
   { href: "/instructor/courses", label: "Courses", icon: BookOpen },
   { href: "/instructor/students", label: "Students", icon: Users },
-  { href: "/instructor/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/instructor/profile", label: "Profile", icon: Settings },
 ];
 

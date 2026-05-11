@@ -10,8 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGetPublicCourseByIdQuery } from "@/lib/api/course.api";
-import { BuyNowButton } from "@/components/payments/buy-now-button";
-import { useAppSelector } from "@/store/hooks";
+import { CourseCta } from "@/components/payments/course-cta";
+import { useIsEnrolled } from "@/lib/use-is-enrolled";
 import { formatCurrency, getInitials, youtubeEmbedUrl } from "@/lib/utils";
 import type { Lesson, Module, User } from "@/types";
 
@@ -19,7 +19,7 @@ export default function PublicCourseDetailPage({ params }: { params: Promise<{ i
   const { id } = use(params);
   const { data, isLoading } = useGetPublicCourseByIdQuery(id);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
-  const currentUser = useAppSelector((s) => s.auth.user);
+  const isEnrolled = useIsEnrolled(data?.course);
 
   if (isLoading) {
     return (
@@ -50,13 +50,6 @@ export default function PublicCourseDetailPage({ params }: { params: Promise<{ i
   }
 
   const instructor = typeof course.instructor === "object" ? course.instructor : null;
-  const instructorId =
-    instructor?._id ?? (typeof course.instructor === "string" ? course.instructor : "");
-  const currentUserId = currentUser?._id || currentUser?.id;
-  const isEnrolled =
-    !!currentUserId &&
-    Array.isArray(course.enrolledStudents) &&
-    course.enrolledStudents.some((s) => s === currentUserId);
   const modules = Array.isArray(course.modules)
     ? ((course.modules as Module[]).slice().sort((a, b) => a.order - b.order))
     : [];
@@ -67,9 +60,9 @@ export default function PublicCourseDetailPage({ params }: { params: Promise<{ i
   );
 
   const handleLessonClick = (lesson: Lesson) => {
-    if (!lesson.isFreePreview) {
+    if (!isEnrolled) {
       toast.warning("Lesson locked", {
-        description: "Enroll to unlock this lesson.",
+        description: "Purchase this course to watch the lessons.",
       });
       return;
     }
@@ -83,7 +76,7 @@ export default function PublicCourseDetailPage({ params }: { params: Promise<{ i
     setActiveLesson(lesson);
   };
 
-  const activeEmbed = activeLesson ? youtubeEmbedUrl(activeLesson.videoUrl) : null;
+  const activeEmbed = activeLesson && isEnrolled ? youtubeEmbedUrl(activeLesson.videoUrl) : null;
 
   return (
     <div className="container space-y-8 py-10">
@@ -194,6 +187,7 @@ export default function PublicCourseDetailPage({ params }: { params: Promise<{ i
                     module={m}
                     activeLessonId={activeLesson?._id ?? null}
                     onLessonClick={handleLessonClick}
+                    locked={!isEnrolled}
                   />
                 ))
               )}
@@ -207,34 +201,12 @@ export default function PublicCourseDetailPage({ params }: { params: Promise<{ i
               <CardTitle className="text-2xl">{formatCurrency(course.price)}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {isEnrolled ? (
-                <>
-                  <Button className="w-full rounded-xs" size="lg" asChild>
-                    <Link href="/student">Continue learning</Link>
-                  </Button>
-                  <p className="text-center text-xs text-muted-foreground">
-                    You already own this course.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <BuyNowButton
-                    courseId={course._id}
-                    price={course.price}
-                    instructorId={instructorId}
-                    isEnrolled={isEnrolled}
-                    size="lg"
-                    fullWidth
-                    label="Buy Now"
-                  />
-                  <Button className="w-full rounded-xs" variant="outline" size="lg" asChild>
-                    <Link href={`/courses/${course._id}`}>View curriculum</Link>
-                  </Button>
-                  <p className="text-center text-xs text-muted-foreground">
-                    Secure checkout powered by Stripe.
-                  </p>
-                </>
-              )}
+              <CourseCta course={course} size="lg" fullWidth />
+              <p className="text-center text-xs text-muted-foreground">
+                {isEnrolled
+                  ? "You already own this course."
+                  : "Secure checkout powered by Stripe."}
+              </p>
             </CardContent>
           </Card>
 
@@ -281,9 +253,10 @@ interface ModuleAccordionProps {
   module: Module;
   activeLessonId: string | null;
   onLessonClick: (lesson: Lesson) => void;
+  locked: boolean;
 }
 
-function ModuleAccordion({ module: mod, activeLessonId, onLessonClick }: ModuleAccordionProps) {
+function ModuleAccordion({ module: mod, activeLessonId, onLessonClick, locked }: ModuleAccordionProps) {
   const [open, setOpen] = useState(false);
   const lessons = (mod.lessons ?? []).slice().sort((a, b) => a.order - b.order);
 
@@ -316,17 +289,19 @@ function ModuleAccordion({ module: mod, activeLessonId, onLessonClick }: ModuleA
           ) : (
             lessons.map((lesson) => {
               const isActive = lesson._id === activeLessonId;
-              const playable = lesson.isFreePreview;
+              const playable = !locked;
               return (
                 <li key={lesson._id}>
                   <button
                     type="button"
                     onClick={() => onLessonClick(lesson)}
+                    disabled={locked}
+                    aria-disabled={locked}
                     className={`flex w-full items-center justify-between gap-2 rounded-xs p-2 text-left text-sm transition-colors ${
                       isActive
                         ? "bg-primary/10 text-foreground"
                         : "bg-muted/40 hover:bg-muted"
-                    } ${playable ? "cursor-pointer" : "cursor-not-allowed opacity-80"}`}
+                    } ${playable ? "cursor-pointer" : "cursor-not-allowed opacity-70"}`}
                   >
                     <span className="flex min-w-0 items-center gap-2">
                       {playable ? (
@@ -339,11 +314,6 @@ function ModuleAccordion({ module: mod, activeLessonId, onLessonClick }: ModuleA
                         <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
                       )}
                       <span className="truncate">{lesson.title}</span>
-                      {lesson.isFreePreview ? (
-                        <Badge variant="outline" className="rounded-xs">
-                          Free
-                        </Badge>
-                      ) : null}
                     </span>
                     {lesson.duration ? (
                       <span className="shrink-0 text-xs text-muted-foreground">
