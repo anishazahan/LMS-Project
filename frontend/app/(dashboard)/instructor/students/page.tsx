@@ -1,7 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,12 +7,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useGetInstructorSalesQuery } from "@/lib/api/payment.api";
 import { formatCurrency, formatDate, getInitials } from "@/lib/utils";
 import type { Course, Payment, User } from "@/types";
+import { Search } from "lucide-react";
+import { useMemo, useState } from "react";
 
 export default function InstructorStudentsPage() {
   const [page, setPage] = useState(1);
   const limit = 20;
   const [search, setSearch] = useState("");
-  const { data, isLoading, isFetching } = useGetInstructorSalesQuery({ page, limit });
+  const { data, isLoading, isFetching } = useGetInstructorSalesQuery({
+    page,
+    limit,
+  });
 
   const meta = data?.meta;
 
@@ -23,7 +26,10 @@ export default function InstructorStudentsPage() {
     const q = search.trim().toLowerCase();
     if (!q) return items;
     return items.filter((p) => {
-      const student = typeof p.student === "object" ? (p.student as Pick<User, "name" | "email">) : null;
+      const student =
+        typeof p.student === "object"
+          ? (p.student as Pick<User, "name" | "email">)
+          : null;
       const course = typeof p.course === "object" ? (p.course as Course) : null;
       return (
         student?.name?.toLowerCase().includes(q) ||
@@ -38,9 +44,15 @@ export default function InstructorStudentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Students</h1>
-        <p className="text-sm text-muted-foreground">
-          Everyone who has purchased one of your courses.
+        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
+          My{" "}
+          <span className="italic bg-gradient-to-r from-blue-600 via-[#7C3AED] to-fuchsia-500 bg-clip-text text-transparent">
+            Students
+          </span>
+        </h1>
+
+        <p className="max-w-lg text-sm md:text-base font-medium text-muted-foreground leading-relaxed">
+          Manage and track everyone who has joined your learning circle
         </p>
       </div>
 
@@ -74,8 +86,12 @@ export default function InstructorStudentsPage() {
             </thead>
             <tbody>
               {filtered.map((p: Payment) => {
-                const student = typeof p.student === "object" ? (p.student as Pick<User, "name" | "email">) : null;
-                const course = typeof p.course === "object" ? (p.course as Course) : null;
+                const student =
+                  typeof p.student === "object"
+                    ? (p.student as Pick<User, "name" | "email">)
+                    : null;
+                const course =
+                  typeof p.course === "object" ? (p.course as Course) : null;
                 return (
                   <tr key={p._id} className="border-t">
                     <td className="px-4 py-3">
@@ -84,24 +100,31 @@ export default function InstructorStudentsPage() {
                           {student ? getInitials(student.name) : "?"}
                         </div>
                         <div>
-                          <p className="font-medium">{student?.name ?? "Unknown"}</p>
-                          <p className="text-xs text-muted-foreground">{student?.email ?? "—"}</p>
+                          <p className="font-medium">
+                            {student?.name ?? "Unknown"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {student?.email ?? "—"}
+                          </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="line-clamp-1 font-medium">{course?.title ?? "—"}</p>
+                      <p className="line-clamp-1 font-medium">
+                        {course?.title ?? "—"}
+                      </p>
                     </td>
                     <td className="px-4 py-3 font-medium">
-                      {formatCurrency(p.amount, (p.currency || "usd").toUpperCase())}
+                      {formatCurrency(
+                        p.amount,
+                        (p.currency || "usd").toUpperCase(),
+                      )}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {formatDate(p.paidAt ?? p.createdAt)}
                     </td>
                     <td className="px-4 py-3">
-                      <Badge
-                        className="rounded-xs capitalize bg-emerald-600 hover:bg-emerald-600"
-                      >
+                      <Badge className="rounded-xs capitalize bg-emerald-600 hover:bg-emerald-600">
                         {p.status}
                       </Badge>
                     </td>
@@ -110,7 +133,10 @@ export default function InstructorStudentsPage() {
               })}
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  <td
+                    colSpan={5}
+                    className="px-4 py-6 text-center text-sm text-muted-foreground"
+                  >
                     No matches for &ldquo;{search}&rdquo;.
                   </td>
                 </tr>

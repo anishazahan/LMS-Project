@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, BookOpen, CheckCircle2, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetStudentPurchasesQuery } from "@/lib/api/payment.api";
+import { ArrowRight, BookOpen, CheckCircle2, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export default function StudentCoursesPage() {
   const { data, isLoading } = useGetStudentPurchasesQuery();
@@ -15,10 +15,16 @@ export default function StudentCoursesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">My Courses</h1>
-        <p className="text-sm text-muted-foreground">
-          Every course you&apos;ve purchased — pick one and keep learning.
-        </p>
+        <h1 className="text-4xl font-black tracking-tighter text-foreground">
+          My{" "}
+          <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-[#7C3AED] to-fuchsia-500">
+            Courses
+          </span>
+        </h1>
+
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground leading-relaxed">
+          <p>Every course you&apos;ve purchased and pick on. </p>
+        </div>
       </div>
 
       {isLoading ? (
@@ -55,7 +61,11 @@ export default function StudentCoursesPage() {
                 <div className="aspect-video w-full overflow-hidden bg-muted">
                   {thumb ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={thumb} alt={c.title} className="h-full w-full object-cover" />
+                    <img
+                      src={thumb}
+                      alt={c.title}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
                       No thumbnail
@@ -67,7 +77,9 @@ export default function StudentCoursesPage() {
                     <div className="min-w-0">
                       <p className="line-clamp-2 font-medium">{c.title}</p>
                       {instructorName ? (
-                        <p className="text-xs text-muted-foreground">By {instructorName}</p>
+                        <p className="text-xs text-muted-foreground">
+                          By {instructorName}
+                        </p>
                       ) : null}
                     </div>
                     {progress >= 100 ? (

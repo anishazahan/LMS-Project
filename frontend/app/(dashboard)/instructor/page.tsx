@@ -1,13 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, BookOpen, DollarSign, MessageSquareText, ShoppingBag, Star, TrendingUp, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentHistoryTable } from "@/components/payments/payment-history-table";
 import { ReviewItem } from "@/components/reviews/review-item";
 import { StarRating } from "@/components/reviews/star-rating";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useGetInstructorCoursesQuery } from "@/lib/api/course.api";
 import {
   useGetInstructorSalesQuery,
@@ -17,13 +21,29 @@ import {
 } from "@/lib/api/payment.api";
 import { useGetInstructorReviewAnalyticsQuery } from "@/lib/api/review.api";
 import { formatCurrency } from "@/lib/utils";
+import {
+  ArrowRight,
+  BookOpen,
+  DollarSign,
+  MessageSquareText,
+  ShoppingBag,
+  Star,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function InstructorDashboardPage() {
-  const { data: statsData, isLoading: statsLoading } = useGetInstructorStatsQuery();
-  const { data: coursesData, isLoading: coursesLoading } = useGetInstructorCoursesQuery();
-  const { data: salesData, isLoading: salesLoading } = useGetInstructorSalesQuery({ page: 1, limit: 20 });
-  const { data: purchasesData, isLoading: purchasesLoading } = useGetStudentPurchasesQuery();
-  const { data: myPaymentsData, isLoading: myPaymentsLoading } = useListMyPaymentsQuery();
+  const { data: statsData, isLoading: statsLoading } =
+    useGetInstructorStatsQuery();
+  const { data: coursesData, isLoading: coursesLoading } =
+    useGetInstructorCoursesQuery();
+  const { data: salesData, isLoading: salesLoading } =
+    useGetInstructorSalesQuery({ page: 1, limit: 20 });
+  const { data: purchasesData, isLoading: purchasesLoading } =
+    useGetStudentPurchasesQuery();
+  const { data: myPaymentsData, isLoading: myPaymentsLoading } =
+    useListMyPaymentsQuery();
   const { data: reviewAnalyticsData, isLoading: reviewAnalyticsLoading } =
     useGetInstructorReviewAnalyticsQuery();
 
@@ -39,7 +59,7 @@ export default function InstructorDashboardPage() {
     if (!stats?.monthlyBreakdown?.length) return 0;
     const now = new Date();
     const cur = stats.monthlyBreakdown.find(
-      (m) => m.year === now.getFullYear() && m.month === now.getMonth() + 1
+      (m) => m.year === now.getFullYear() && m.month === now.getMonth() + 1,
     );
     return cur?.revenue ?? 0;
   })();
@@ -47,9 +67,19 @@ export default function InstructorDashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">Instructor overview</h1>
-        <p className="text-sm text-muted-foreground">
-          Track your courses, sales, and revenue at a glance.
+        <h1 className="text-4xl font-black tracking-tighter text-foreground">
+          Overview
+        </h1>
+
+        <p className="text-sm font-medium text-muted-foreground leading-relaxed flex items-center gap-2">
+          Track your courses, sales, and revenue in
+          <span className="flex items-center gap-1 text-[#7C3AED] font-bold italic">
+            real-time{" "}
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7C3AED] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#7C3AED]"></span>
+            </span>
+          </span>
         </p>
       </div>
 
@@ -122,14 +152,16 @@ export default function InstructorDashboardPage() {
                 {reviewAnalyticsLoading ? (
                   <Skeleton className="h-6 w-32 rounded-xs" />
                 ) : (
-                  reviewAnalytics?.mostReviewed?.[0]?.title ?? "—"
+                  (reviewAnalytics?.mostReviewed?.[0]?.title ?? "—")
                 )}
               </CardTitle>
               {reviewAnalytics?.mostReviewed?.[0] ? (
                 <p className="text-xs text-muted-foreground">
                   {reviewAnalytics.mostReviewed[0].reviewCount} review
-                  {reviewAnalytics.mostReviewed[0].reviewCount === 1 ? "" : "s"} ·{" "}
-                  {reviewAnalytics.mostReviewed[0].rating.toFixed(1)}★
+                  {reviewAnalytics.mostReviewed[0].reviewCount === 1
+                    ? ""
+                    : "s"}{" "}
+                  · {reviewAnalytics.mostReviewed[0].rating.toFixed(1)}★
                 </p>
               ) : null}
             </CardHeader>
@@ -143,7 +175,8 @@ export default function InstructorDashboardPage() {
               <Skeleton className="h-40 w-full rounded-xs" />
             ) : !reviewAnalytics?.recentFeedback?.length ? (
               <div className="rounded-xs border border-dashed p-6 text-center text-sm text-muted-foreground">
-                No reviews yet. As students leave feedback, it&apos;ll appear here.
+                No reviews yet. As students leave feedback, it&apos;ll appear
+                here.
               </div>
             ) : (
               <div className="space-y-2">
@@ -152,7 +185,14 @@ export default function InstructorDashboardPage() {
                     typeof r.course === "object" && r.course
                       ? (r.course as { _id: string })._id
                       : (r.course as string);
-                  return <ReviewItem key={r._id} review={r} courseId={cid} showCourseLabel />;
+                  return (
+                    <ReviewItem
+                      key={r._id}
+                      review={r}
+                      courseId={cid}
+                      showCourseLabel
+                    />
+                  );
                 })}
               </div>
             )}
@@ -187,7 +227,9 @@ export default function InstructorDashboardPage() {
                             {c.title}
                           </Link>
                         </td>
-                        <td className="px-3 py-2 text-muted-foreground">{c.reviewCount}</td>
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {c.reviewCount}
+                        </td>
                         <td className="px-3 py-2 text-muted-foreground">
                           {c.rating.toFixed(1)}★
                         </td>
@@ -219,7 +261,9 @@ export default function InstructorDashboardPage() {
               <BookOpen className="h-5 w-5" />
               You haven&apos;t created any courses yet.
               <Button asChild className="rounded-xs">
-                <Link href="/instructor/courses/new">Create your first course</Link>
+                <Link href="/instructor/courses/new">
+                  Create your first course
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -229,7 +273,9 @@ export default function InstructorDashboardPage() {
               <Link key={c._id} href={`/instructor/courses/${c._id}`}>
                 <Card className="rounded-xs transition-shadow hover:shadow-md">
                   <CardHeader className="space-y-2 p-4">
-                    <CardTitle className="line-clamp-2 text-base">{c.title}</CardTitle>
+                    <CardTitle className="line-clamp-2 text-base">
+                      {c.title}
+                    </CardTitle>
                     <CardDescription className="line-clamp-2 text-xs">
                       {c.shortDescription}
                     </CardDescription>
@@ -238,7 +284,9 @@ export default function InstructorDashboardPage() {
                     <span className="text-muted-foreground">
                       {c.isPublished ? "Published" : "Draft"}
                     </span>
-                    <span className="font-medium">{formatCurrency(c.price, currency)}</span>
+                    <span className="font-medium">
+                      {formatCurrency(c.price, currency)}
+                    </span>
                   </CardContent>
                 </Card>
               </Link>
@@ -284,7 +332,9 @@ export default function InstructorDashboardPage() {
                     Progress: {Math.round(e.progress)}%
                   </p>
                   <Button asChild size="sm" className="w-full rounded-xs">
-                    <Link href={`/courses/${e.course._id}`}>Continue Learning</Link>
+                    <Link href={`/courses/${e.course._id}`}>
+                      Continue Learning
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>

@@ -1,21 +1,21 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
-import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/courses/confirm-dialog";
+import { CourseCard } from "@/components/courses/course-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CourseCard } from "@/components/courses/course-card";
-import { ConfirmDialog } from "@/components/courses/confirm-dialog";
 import {
-  useGetInstructorCoursesQuery,
   useDeleteCourseMutation,
+  useGetInstructorCoursesQuery,
   usePublishCourseMutation,
 } from "@/lib/api/course.api";
 import type { Course } from "@/types";
+import { Plus, Search } from "lucide-react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All statuses" },
@@ -26,7 +26,9 @@ const STATUS_OPTIONS = [
 export default function InstructorCoursesPage() {
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
-  const [status, setStatus] = useState<"all" | "published" | "unpublished">("all");
+  const [status, setStatus] = useState<"all" | "published" | "unpublished">(
+    "all",
+  );
   const [page, setPage] = useState(1);
   const [pendingDelete, setPendingDelete] = useState<Course | null>(null);
 
@@ -51,8 +53,13 @@ export default function InstructorCoursesPage() {
 
   const handleTogglePublish = async (course: Course) => {
     try {
-      await publishCourse({ id: course._id, isPublished: !course.isPublished }).unwrap();
-      toast.success(course.isPublished ? "Course unpublished" : "Course published");
+      await publishCourse({
+        id: course._id,
+        isPublished: !course.isPublished,
+      }).unwrap();
+      toast.success(
+        course.isPublished ? "Course unpublished" : "Course published",
+      );
     } catch {
       /* */
     }
@@ -73,9 +80,15 @@ export default function InstructorCoursesPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">My courses</h1>
-          <p className="text-sm text-muted-foreground">
-            Create, edit, and publish courses you teach.
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
+            My{" "}
+            <span className="italic bg-gradient-to-r from-[#7C3AED] to-fuchsia-500 bg-clip-text text-transparent">
+              Courses
+            </span>
+          </h1>
+
+          <p className="max-w-md text-sm md:text-base font-medium text-muted-foreground leading-relaxed">
+            Create, edit, and publish courses you teach. Manage your
           </p>
         </div>
         <Button asChild className="rounded-xs">
@@ -143,7 +156,8 @@ export default function InstructorCoursesPage() {
       {meta && meta.totalPages > 1 ? (
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">
-            Page {meta.page} of {meta.totalPages} — {meta.total} course{meta.total === 1 ? "" : "s"}
+            Page {meta.page} of {meta.totalPages} — {meta.total} course
+            {meta.total === 1 ? "" : "s"}
           </span>
           <div className="flex gap-2">
             <Button

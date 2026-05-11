@@ -6,6 +6,7 @@ import { ROLES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setSidebarOpen } from "@/store/slices/ui.slice";
+import { motion } from "framer-motion";
 import {
   BookOpen,
   CreditCard,
@@ -61,10 +62,17 @@ export function DashboardSidebar() {
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="flex h-14 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <GraduationCap className="h-5 w-5" />
-            <span>E-Study</span>
+        <div className="flex h-[70px] items-center justify-between px-4">
+          <Link href="/" className="group flex items-center gap-3 w-fit">
+            <motion.div
+              whileHover={{ rotate: -12, scale: 1.1 }}
+              className="flex h-10 w-10 items-center justify-center rounded bg-[#7C3AED] shadow-lg shadow-purple-500/30"
+            >
+              <GraduationCap className="h-6 w-6 text-white" />
+            </motion.div>
+            <span className="text-2xl font-black tracking-tighter italic bg-gradient-to-br from-foreground via-foreground to-[#7C3AED] bg-clip-text text-transparent">
+              E-Study
+            </span>
           </Link>
           <Button
             variant="ghost"

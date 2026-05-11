@@ -1,100 +1,91 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { toast } from "sonner";
-import { Camera, Loader2, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
-  useUploadProfileImageMutation,
   useDeleteProfileImageMutation,
+  useUploadProfileImageMutation,
 } from "@/lib/api/user.api";
-import { validateProfileImage } from "@/lib/validation/profile.schema";
 import { getProfileImageUrl, getUserInitials } from "@/lib/user";
-import type { User } from "@/types";
-
-interface Props {
-  user: User;
-}
+import { validateProfileImage } from "@/lib/validation/profile.schema";
+import { Camera, Loader2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 export function ProfilePhotoUploader({ user }: Props) {
-  const [uploadImage, { isLoading: uploading }] = useUploadProfileImageMutation();
-  const [deleteImage, { isLoading: removing }] = useDeleteProfileImageMutation();
+  const [uploadImage, { isLoading: uploading }] =
+    useUploadProfileImageMutation();
+  const [deleteImage, { isLoading: removing }] =
+    useDeleteProfileImageMutation();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const liveUrl = previewUrl || getProfileImageUrl(user);
-
-  const onPickFile = () => inputRef.current?.click();
-
-  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-
-    const validationError = validateProfileImage(file);
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
-    try {
-      await uploadImage(file).unwrap();
-      toast.success("Profile photo updated");
-    } catch {
-      // central error toast handles it
-    } finally {
-      URL.revokeObjectURL(objectUrl);
-      setPreviewUrl(null);
-    }
-  };
-
-  const onRemove = async () => {
-    try {
-      await deleteImage().unwrap();
-      toast.success("Profile photo removed");
-    } catch {
-      // central error toast handles it
-    }
-  };
-
-  const hasImage = Boolean(getProfileImageUrl(user));
   const busy = uploading || removing;
+  const hasImage = Boolean(getProfileImageUrl(user));
 
   return (
-    <div className="flex items-center gap-5">
-      <Avatar className="h-24 w-24">
-        {liveUrl ? <AvatarImage src={liveUrl} alt={user.name} /> : null}
-        <AvatarFallback className="text-xl">{getUserInitials(user.name)}</AvatarFallback>
-      </Avatar>
-      <div className="flex flex-col gap-2">
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          className="hidden"
-          onChange={onFileChange}
-        />
-        <Button type="button" onClick={onPickFile} disabled={busy} className="gap-2">
-          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-          {hasImage ? "Change photo" : "Upload photo"}
-        </Button>
-        {hasImage ? (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onRemove}
-            disabled={busy}
-            className="gap-2 text-destructive hover:text-destructive"
-          >
-            {removing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-            Remove
-          </Button>
-        ) : null}
-        <p className="text-xs text-muted-foreground">JPEG, PNG, WebP, or GIF. Max 5 MB.</p>
+    <div className="flex flex-col items-center gap-4">
+      <div className="group relative">
+        <Avatar className="h-32 w-32 border-4 border-background shadow-2xl ring-2 ring-[#7C3AED]/10">
+          {liveUrl ? (
+            <AvatarImage
+              src={liveUrl}
+              alt={user.name}
+              className="object-cover"
+            />
+          ) : null}
+          <AvatarFallback className="text-3xl font-black bg-muted text-[#7C3AED]">
+            {getUserInitials(user.name)}
+          </AvatarFallback>
+        </Avatar>
+
+        <button
+          onClick={() => inputRef.current?.click()}
+          disabled={busy}
+          className="absolute bottom-1 right-1 h-10 w-10 rounded-full bg-[#7C3AED] text-white flex items-center justify-center border-4 border-background hover:scale-110 transition-transform disabled:opacity-50"
+        >
+          {uploading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Camera className="h-4 w-4" />
+          )}
+        </button>
       </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const err = validateProfileImage(file);
+          if (err) return toast.error(err);
+          const url = URL.createObjectURL(file);
+          setPreviewUrl(url);
+          uploadImage(file)
+            .unwrap()
+            .then(() => toast.success("Photo updated"))
+            .finally(() => {
+              URL.revokeObjectURL(url);
+              setPreviewUrl(null);
+            });
+        }}
+      />
+
+      {hasImage && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => deleteImage().unwrap()}
+          disabled={busy}
+          className="text-destructive font-bold text-[10px] uppercase tracking-widest hover:bg-destructive/5"
+        >
+          {removing ? "Removing..." : "Remove Photo"}
+        </Button>
+      )}
     </div>
   );
 }
