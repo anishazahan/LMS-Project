@@ -1,7 +1,7 @@
 "use client";
 
-import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentHistoryTable } from "@/components/payments/payment-history-table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useListMyPaymentsQuery } from "@/lib/api/payment.api";
 
 export default function StudentPaymentsPage() {
@@ -11,9 +11,16 @@ export default function StudentPaymentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Payment History</h1>
-        <p className="text-sm text-muted-foreground">
-          Every purchase, receipt, and transaction. Re-download receipts anytime.
+        <h1 className="text-3xl  font-black tracking-tighter text-foreground">
+          Payment{" "}
+          <span className="italic bg-gradient-to-r from-emerald-500 via-[#7C3AED] to-fuchsia-500 bg-clip-text text-transparent">
+            History
+          </span>
+        </h1>
+
+        <p className="max-w-md text-sm md:text-base font-medium text-muted-foreground leading-relaxed">
+          Every purchase, receipt, and transaction. Re-download your receipts
+          anytime
         </p>
       </div>
 

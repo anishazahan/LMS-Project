@@ -83,7 +83,7 @@ export function CourseSummaryCard({ course, hideInstructor }: Props) {
           <span className="text-base font-semibold">
             {formatCurrency(course.price)}
           </span>
-          <Button asChild size="sm" className="rounded-xs">
+          <Button variant="outline" size="sm" className="rounded-xs">
             <Link href={`/courses/${course._id}`}>View</Link>
           </Button>
         </div>

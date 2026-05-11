@@ -1,28 +1,48 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, BookOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetStudentPurchasesQuery } from "@/lib/api/payment.api";
+import { ArrowRight, BookOpen, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export default function StudentDashboardPage() {
   const { data, isLoading } = useGetStudentPurchasesQuery();
   const enrollments = data?.enrollments ?? [];
 
-  const inProgress = enrollments.filter((e) => e.progress > 0 && e.progress < 100);
+  const inProgress = enrollments.filter(
+    (e) => e.progress > 0 && e.progress < 100,
+  );
   const completed = enrollments.filter((e) => e.progress >= 100).length;
   const recent = enrollments
     .slice()
-    .sort((a, b) => new Date(b.enrollmentDate).getTime() - new Date(a.enrollmentDate).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.enrollmentDate).getTime() -
+        new Date(a.enrollmentDate).getTime(),
+    )
     .slice(0, 3);
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">Welcome back</h1>
-        <p className="text-sm text-muted-foreground">Pick up where you left off.</p>
+        <h1 className="text-3xl  font-black tracking-tighter text-foreground">
+          Welcome{" "}
+          <span className="italic bg-gradient-to-r from-emerald-500 via-[#7C3AED] to-fuchsia-500 bg-clip-text text-transparent">
+            back
+          </span>
+        </h1>
+
+        <p className="max-w-md text-sm md:text-base font-medium text-muted-foreground leading-relaxed">
+          Pick up where you left off.
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -30,7 +50,11 @@ export default function StudentDashboardPage() {
           <CardHeader>
             <CardDescription>Purchased courses</CardDescription>
             <CardTitle className="text-3xl">
-              {isLoading ? <Skeleton className="h-8 w-12 rounded-xs" /> : enrollments.length}
+              {isLoading ? (
+                <Skeleton className="h-8 w-12 rounded-xs" />
+              ) : (
+                enrollments.length
+              )}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -38,7 +62,11 @@ export default function StudentDashboardPage() {
           <CardHeader>
             <CardDescription>In progress</CardDescription>
             <CardTitle className="text-3xl">
-              {isLoading ? <Skeleton className="h-8 w-12 rounded-xs" /> : inProgress.length}
+              {isLoading ? (
+                <Skeleton className="h-8 w-12 rounded-xs" />
+              ) : (
+                inProgress.length
+              )}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -46,7 +74,11 @@ export default function StudentDashboardPage() {
           <CardHeader>
             <CardDescription>Completed</CardDescription>
             <CardTitle className="text-3xl">
-              {isLoading ? <Skeleton className="h-8 w-12 rounded-xs" /> : completed}
+              {isLoading ? (
+                <Skeleton className="h-8 w-12 rounded-xs" />
+              ) : (
+                completed
+              )}
             </CardTitle>
           </CardHeader>
         </Card>

@@ -27,7 +27,7 @@ export function InstructorSummaryCard({ instructor }: Props) {
         href={`/instructors/${instructor._id}`}
         className="group block h-full"
       >
-        <Card className="relative h-full overflow-hidden rounded-md border-muted-foreground/10 bg-card/50 backdrop-blur-sm transition-all duration-300 group-hover:border-[#7C3AED]/30 group-hover:shadow-2xl group-hover:shadow-[#7C3AED]/10">
+        <Card className="relative h-full overflow-hidden rounded-md border-muted-foreground/10 bg-card/50 backdrop-blur-sm transition-all duration-300 group-hover:border-[#7C3AED]/30 group-hover:shadow-2xl group-hover:shadow-[#7C3AED]/10 min-h-[240px]">
           {/* Subtle Background Glow on Hover */}
           <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#7C3AED]/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
