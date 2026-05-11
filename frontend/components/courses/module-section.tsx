@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/courses/confirm-dialog";
+import {
+  LessonForm,
+  type LessonFormValues,
+} from "@/components/courses/lesson-form";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -16,21 +15,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ConfirmDialog } from "@/components/courses/confirm-dialog";
-import { LessonForm, type LessonFormValues } from "@/components/courses/lesson-form";
-import {
-  useUpdateModuleMutation,
-  useDeleteModuleMutation,
-  usePublishModuleMutation,
-} from "@/lib/api/module.api";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useCreateLessonMutation,
-  useUpdateLessonMutation,
   useDeleteLessonMutation,
   usePublishLessonMutation,
+  useUpdateLessonMutation,
 } from "@/lib/api/lesson.api";
-import { toast } from "sonner";
+import {
+  useDeleteModuleMutation,
+  usePublishModuleMutation,
+  useUpdateModuleMutation,
+} from "@/lib/api/module.api";
 import type { Lesson, Module } from "@/types";
+import { ChevronDown, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface ModuleSectionProps {
   module: Module;
@@ -56,7 +59,10 @@ export function ModuleSection({ module: mod, courseId }: ModuleSectionProps) {
 
   const sortedLessons = [...mod.lessons].sort((a, b) => a.order - b.order);
 
-  const handleSaveModule = async (values: { title: string; description: string }) => {
+  const handleSaveModule = async (values: {
+    title: string;
+    description: string;
+  }) => {
     try {
       await updateModule({ id: mod._id, courseId, body: values }).unwrap();
       toast.success("Module updated");
@@ -78,7 +84,11 @@ export function ModuleSection({ module: mod, courseId }: ModuleSectionProps) {
 
   const handleTogglePublishModule = async (next: boolean) => {
     try {
-      await publishModule({ id: mod._id, courseId, isPublished: next }).unwrap();
+      await publishModule({
+        id: mod._id,
+        courseId,
+        isPublished: next,
+      }).unwrap();
       toast.success(next ? "Module published" : "Module unpublished");
     } catch {
       /* */
@@ -87,7 +97,11 @@ export function ModuleSection({ module: mod, courseId }: ModuleSectionProps) {
 
   const handleCreateLesson = async (values: LessonFormValues) => {
     try {
-      await createLesson({ moduleId: mod._id, courseId, body: values }).unwrap();
+      await createLesson({
+        moduleId: mod._id,
+        courseId,
+        body: values,
+      }).unwrap();
       toast.success("Lesson added");
       setCreatingLesson(false);
     } catch {
@@ -155,7 +169,9 @@ export function ModuleSection({ module: mod, courseId }: ModuleSectionProps) {
           )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground">#{mod.order + 1}</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                #{mod.order + 1}
+              </span>
               <h3 className="truncate text-sm font-semibold">{mod.title}</h3>
               <Badge
                 variant={mod.isPublished ? "default" : "secondary"}
@@ -165,10 +181,13 @@ export function ModuleSection({ module: mod, courseId }: ModuleSectionProps) {
               </Badge>
             </div>
             {mod.description ? (
-              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{mod.description}</p>
+              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                {mod.description}
+              </p>
             ) : null}
             <p className="mt-1 text-xs text-muted-foreground">
-              {sortedLessons.length} lesson{sortedLessons.length === 1 ? "" : "s"}
+              {sortedLessons.length} lesson
+              {sortedLessons.length === 1 ? "" : "s"}
             </p>
           </div>
         </button>
@@ -210,15 +229,19 @@ export function ModuleSection({ module: mod, courseId }: ModuleSectionProps) {
             <p className="text-xs text-muted-foreground">No lessons yet.</p>
           ) : (
             <ul className="space-y-2">
-              {sortedLessons.map((lesson) => (
+              {sortedLessons?.map((lesson) => (
                 <li
                   key={lesson._id}
                   className="flex items-start justify-between gap-3 rounded-xs border bg-background p-3"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">#{lesson.order + 1}</span>
-                      <span className="truncate text-sm font-medium">{lesson.title}</span>
+                      <span className="text-xs text-muted-foreground">
+                        #{lesson.order + 1}
+                      </span>
+                      <span className="truncate text-sm font-medium">
+                        {lesson.title}
+                      </span>
                       <Badge
                         variant={lesson.isPublished ? "default" : "secondary"}
                         className="rounded-xs"
@@ -231,7 +254,9 @@ export function ModuleSection({ module: mod, courseId }: ModuleSectionProps) {
                         </Badge>
                       ) : null}
                     </div>
-                    <p className="mt-1 truncate text-xs text-muted-foreground">{lesson.videoUrl}</p>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">
+                      {lesson.videoUrl}
+                    </p>
                     {lesson.duration ? (
                       <p className="text-xs text-muted-foreground">
                         Duration: {lesson.duration} min
@@ -241,7 +266,9 @@ export function ModuleSection({ module: mod, courseId }: ModuleSectionProps) {
                   <div className="flex shrink-0 items-center gap-2">
                     <Switch
                       checked={lesson.isPublished}
-                      onCheckedChange={(next) => handleTogglePublishLesson(lesson, next)}
+                      onCheckedChange={(next) =>
+                        handleTogglePublishLesson(lesson, next)
+                      }
                       aria-label="Toggle lesson publish"
                     />
                     <Button
@@ -286,7 +313,9 @@ export function ModuleSection({ module: mod, courseId }: ModuleSectionProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit module</DialogTitle>
-            <DialogDescription>Update the module title and description.</DialogDescription>
+            <DialogDescription>
+              Update the module title and description.
+            </DialogDescription>
           </DialogHeader>
           <ModuleEditForm
             initial={{ title: mod.title, description: mod.description ?? "" }}
@@ -300,9 +329,14 @@ export function ModuleSection({ module: mod, courseId }: ModuleSectionProps) {
         <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>Add lesson</DialogTitle>
-            <DialogDescription>Add a YouTube-backed lesson to this module.</DialogDescription>
+            <DialogDescription>
+              Add a YouTube-backed lesson to this module.
+            </DialogDescription>
           </DialogHeader>
-          <LessonForm onSubmit={handleCreateLesson} submitting={createLessonState.isLoading} />
+          <LessonForm
+            onSubmit={handleCreateLesson}
+            submitting={createLessonState.isLoading}
+          />
         </DialogContent>
       </Dialog>
 
