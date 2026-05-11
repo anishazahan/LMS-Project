@@ -6,6 +6,7 @@ import moduleRoutes from './module.routes.js';
 import lessonRoutes from './lesson.routes.js';
 import enrollmentRoutes from './enrollment.routes.js';
 import paymentRoutes from './payment.routes.js';
+import reviewRoutes from './review.routes.js';
 import emailRoutes from './email.routes.js';
 
 const router = Router();
@@ -21,6 +22,7 @@ router.use('/modules', moduleRoutes);
 router.use('/modules', lessonRoutes);
 router.use('/enrollments', enrollmentRoutes);
 router.use('/payments', paymentRoutes);
+router.use('/reviews', reviewRoutes);
 router.use('/emails', emailRoutes);
 
 export default router;

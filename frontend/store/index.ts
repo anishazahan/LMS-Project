@@ -14,6 +14,7 @@ import "@/lib/api/module.api";
 import "@/lib/api/lesson.api";
 import "@/lib/api/instructor.api";
 import "@/lib/api/payment.api";
+import "@/lib/api/review.api";
 
 export const makeStore = () => {
   const store = configureStore({

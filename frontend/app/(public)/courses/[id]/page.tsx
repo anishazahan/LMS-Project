@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGetPublicCourseByIdQuery } from "@/lib/api/course.api";
 import { CourseCta } from "@/components/payments/course-cta";
+import { ReviewsSection } from "@/components/reviews/reviews-section";
 import { useIsEnrolled } from "@/lib/use-is-enrolled";
 import { formatCurrency, getInitials, youtubeEmbedUrl } from "@/lib/utils";
 import type { Lesson, Module, User } from "@/types";
@@ -193,6 +194,8 @@ export default function PublicCourseDetailPage({ params }: { params: Promise<{ i
               )}
             </CardContent>
           </Card>
+
+          <ReviewsSection courseId={course._id} isEnrolled={isEnrolled} />
         </div>
 
         <aside className="space-y-4">

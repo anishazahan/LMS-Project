@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BookOpen, DollarSign, ShoppingBag, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, BookOpen, DollarSign, MessageSquareText, ShoppingBag, Star, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentHistoryTable } from "@/components/payments/payment-history-table";
+import { ReviewItem } from "@/components/reviews/review-item";
+import { StarRating } from "@/components/reviews/star-rating";
 import { useGetInstructorCoursesQuery } from "@/lib/api/course.api";
 import {
   useGetInstructorSalesQuery,
@@ -13,6 +15,7 @@ import {
   useGetStudentPurchasesQuery,
   useListMyPaymentsQuery,
 } from "@/lib/api/payment.api";
+import { useGetInstructorReviewAnalyticsQuery } from "@/lib/api/review.api";
 import { formatCurrency } from "@/lib/utils";
 
 export default function InstructorDashboardPage() {
@@ -21,12 +24,15 @@ export default function InstructorDashboardPage() {
   const { data: salesData, isLoading: salesLoading } = useGetInstructorSalesQuery({ page: 1, limit: 20 });
   const { data: purchasesData, isLoading: purchasesLoading } = useGetStudentPurchasesQuery();
   const { data: myPaymentsData, isLoading: myPaymentsLoading } = useListMyPaymentsQuery();
+  const { data: reviewAnalyticsData, isLoading: reviewAnalyticsLoading } =
+    useGetInstructorReviewAnalyticsQuery();
 
   const stats = statsData?.stats;
   const courses = coursesData?.data ?? [];
   const sales = salesData?.items ?? [];
   const purchased = purchasesData?.enrollments ?? [];
   const myPayments = myPaymentsData?.payments ?? [];
+  const reviewAnalytics = reviewAnalyticsData?.analytics;
   const currency = stats?.currency?.toUpperCase() || "USD";
 
   const thisMonth = (() => {
@@ -73,6 +79,127 @@ export default function InstructorDashboardPage() {
           icon={<TrendingUp className="h-4 w-4" />}
         />
       </div>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Reviews & feedback</h2>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <StatCard
+            title="Total Reviews"
+            value={reviewAnalytics?.totalReviews ?? 0}
+            loading={reviewAnalyticsLoading}
+            icon={<MessageSquareText className="h-4 w-4" />}
+          />
+          <Card className="rounded-xs">
+            <CardHeader className="space-y-1">
+              <div className="flex items-center justify-between">
+                <CardDescription>Average Rating</CardDescription>
+                <span className="text-muted-foreground">
+                  <Star className="h-4 w-4" />
+                </span>
+              </div>
+              <CardTitle className="text-3xl">
+                {reviewAnalyticsLoading ? (
+                  <Skeleton className="h-8 w-20 rounded-xs" />
+                ) : (
+                  (reviewAnalytics?.avgRating ?? 0).toFixed(1)
+                )}
+              </CardTitle>
+              <div className="pt-1">
+                <StarRating value={reviewAnalytics?.avgRating ?? 0} size="sm" />
+              </div>
+            </CardHeader>
+          </Card>
+          <Card className="rounded-xs">
+            <CardHeader className="space-y-1">
+              <div className="flex items-center justify-between">
+                <CardDescription>Most-reviewed course</CardDescription>
+                <span className="text-muted-foreground">
+                  <BookOpen className="h-4 w-4" />
+                </span>
+              </div>
+              <CardTitle className="line-clamp-1 text-base">
+                {reviewAnalyticsLoading ? (
+                  <Skeleton className="h-6 w-32 rounded-xs" />
+                ) : (
+                  reviewAnalytics?.mostReviewed?.[0]?.title ?? "—"
+                )}
+              </CardTitle>
+              {reviewAnalytics?.mostReviewed?.[0] ? (
+                <p className="text-xs text-muted-foreground">
+                  {reviewAnalytics.mostReviewed[0].reviewCount} review
+                  {reviewAnalytics.mostReviewed[0].reviewCount === 1 ? "" : "s"} ·{" "}
+                  {reviewAnalytics.mostReviewed[0].rating.toFixed(1)}★
+                </p>
+              ) : null}
+            </CardHeader>
+          </Card>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[2fr,1fr]">
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Recent feedback</p>
+            {reviewAnalyticsLoading ? (
+              <Skeleton className="h-40 w-full rounded-xs" />
+            ) : !reviewAnalytics?.recentFeedback?.length ? (
+              <div className="rounded-xs border border-dashed p-6 text-center text-sm text-muted-foreground">
+                No reviews yet. As students leave feedback, it&apos;ll appear here.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {reviewAnalytics.recentFeedback.slice(0, 5).map((r) => {
+                  const cid =
+                    typeof r.course === "object" && r.course
+                      ? (r.course as { _id: string })._id
+                      : (r.course as string);
+                  return <ReviewItem key={r._id} review={r} courseId={cid} showCourseLabel />;
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Most reviewed</p>
+            {reviewAnalyticsLoading ? (
+              <Skeleton className="h-40 w-full rounded-xs" />
+            ) : !reviewAnalytics?.mostReviewed?.length ? (
+              <div className="rounded-xs border border-dashed p-6 text-center text-sm text-muted-foreground">
+                No data yet.
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-xs border">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-2 font-medium">Course</th>
+                      <th className="px-3 py-2 font-medium">Reviews</th>
+                      <th className="px-3 py-2 font-medium">Rating</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reviewAnalytics.mostReviewed.map((c) => (
+                      <tr key={c._id} className="border-t">
+                        <td className="px-3 py-2">
+                          <Link
+                            href={`/instructor/courses/${c._id}`}
+                            className="line-clamp-1 hover:underline"
+                          >
+                            {c.title}
+                          </Link>
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground">{c.reviewCount}</td>
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {c.rating.toFixed(1)}★
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">

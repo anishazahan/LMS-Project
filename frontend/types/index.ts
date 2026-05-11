@@ -138,6 +138,32 @@ export interface PurchasedEnrollment {
   enrollmentDate: string;
 }
 
+export type ReviewRating = 1 | 2 | 3 | 4 | 5;
+
+export interface Review {
+  _id: string;
+  user: Pick<User, "_id" | "name" | "profileImage"> | null;
+  course: string | Pick<Course, "_id" | "title" | "thumbnail">;
+  rating: ReviewRating;
+  comment: string;
+  isEdited: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RatingSummary {
+  avg: number;
+  count: number;
+  distribution: Record<"1" | "2" | "3" | "4" | "5", number>;
+}
+
+export interface InstructorReviewAnalytics {
+  totalReviews: number;
+  avgRating: number;
+  recentFeedback: Review[];
+  mostReviewed: Array<{ _id: string; title: string; reviewCount: number; rating: number }>;
+}
+
 export interface ApiSuccess<T = unknown> {
   success: true;
   message?: string;

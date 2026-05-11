@@ -3,6 +3,7 @@ import { ArrowRight, BrainCircuit, Sparkles, Zap, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FeaturedSections } from "@/components/public/featured-sections";
+import { TestimonialsSection } from "@/components/public/testimonials-section";
 
 export default function HomePage() {
   return (
@@ -80,6 +81,8 @@ export default function HomePage() {
       </section>
 
       <FeaturedSections />
+
+      <TestimonialsSection />
     </div>
   );
 }
