@@ -1,4 +1,4 @@
-# EDUCART – Advanced Learning Management System (LMS)
+# E-Study – Advanced Learning Management System (LMS)
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
 ![React](https://img.shields.io/badge/React-19-blue)
@@ -14,9 +14,9 @@
 
 ---
 
-# 📚 EDUCART – Advanced LMS Platform
+# 📚 E-Study – Advanced LMS Platform
 
-EDUCART is a production-ready modern Learning Management System (LMS) built using the MERN stack with Next.js App Router.  
+E-Study is a production-ready modern Learning Management System (LMS) built using the MERN stack with Next.js App Router.  
 The platform supports secure authentication, instructor course management, student enrollments, Stripe payment integration, Cloudinary media uploads, role-based dashboards, and responsive modern UI/UX.
 
 ---
@@ -171,7 +171,7 @@ The system automatically sends emails for:
 # 📁 Project Structure
 
 ```bash
-educart/
+E-Study/
 ├── frontend/
 │   ├── app/
 │   ├── components/
